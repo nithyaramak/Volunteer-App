@@ -1,14 +1,23 @@
 import React from 'react';
-import { StyleSheet, Text, TextInput, FlatList, View, TouchableOpacity, Alert } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  TextInput,
+  FlatList,
+  View,
+  TouchableOpacity,
+  Alert,
+} from 'react-native';
 import PickerSelect from 'react-native-picker-select';
-
-import { search } from '../lib/utils';
-
+import { ScrollView } from 'react-native-gesture-handler';
+import {search} from '../lib/utils';
+import {Card} from 'react-native-shadow-cards';
+​
 const styles = StyleSheet.create({
   outerView: {
     backgroundColor: '#FFF',
     width: '100%',
-    height: '100%'
+    height: '100%',
   },
   inputsView: {
     backgroundColor: '#F1F0EE',
@@ -19,37 +28,37 @@ const styles = StyleSheet.create({
     fontFamily: 'IBMPlexSans-Medium',
     color: '#000',
     fontSize: 14,
-    paddingBottom: 5
+    paddingBottom: 5,
   },
   selector: {
     fontFamily: 'IBMPlexSans-Medium',
     backgroundColor: '#fff',
     padding: 8,
-    marginBottom: 10
+    marginBottom: 10,
   },
   textInput: {
     fontFamily: 'IBMPlexSans-Medium',
     backgroundColor: '#fff',
     padding: 8,
-    marginBottom: 10
+    marginBottom: 10,
   },
   button: {
-    backgroundColor: '#1062FE',
+    backgroundColor: '#ff8c00',
     color: '#FFFFFF',
     fontFamily: 'IBMPlexSans-Medium',
     fontSize: 16,
     overflow: 'hidden',
     padding: 12,
-    textAlign:'center',
-    marginTop: 15
+    textAlign: 'center',
+    marginTop: 15,
   },
   searchResultText: {
     fontFamily: 'IBMPlexSans-Bold',
-    padding: 10,
-    color: '#1062FE'
+    padding: 5,
+    color: 'gray',
   },
   flatListView: {
-    backgroundColor: '#FFF'
+    backgroundColor: '#FFF',
   },
   itemTouchable: {
     flexDirection: 'column',
@@ -57,11 +66,11 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'stretch',
     borderBottomColor: '#dddddd',
-    borderBottomWidth: 0.25
+    borderBottomWidth: 0.25,
   },
   itemView: {
     flexDirection: 'row',
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
   },
   itemName: {
     fontSize: 24,
@@ -70,24 +79,42 @@ const styles = StyleSheet.create({
   itemQuantity: {
     fontSize: 14,
     fontFamily: 'IBMPlexSans-Medium',
-    color: 'gray'
+    color: 'gray',
   },
   itemDescription: {
     fontSize: 14,
     fontFamily: 'IBMPlexSans-Medium',
-    color: 'gray'
-  }
+    color: 'gray',
+  },
+  buttonJoin: {
+    backgroundColor: '#ff8c00',
+    color: '#FFFFFF',
+    fontFamily: 'IBMPlexSans-Medium',
+    fontSize: 14,
+    overflow: 'hidden',
+    textAlign: 'center',
+    paddingTop: 5,
+    width: 70,
+    height: 30,
+    borderRadius: 4
+  },
+  joinView: {
+    alignItems: "flex-end" 
+  },
 });
-
-const SearchResources = function ({ route, navigation }) {
-  const [query, setQuery] = React.useState({ type: 'Food', name: '' });
+​
+const SearchResources = function({route, navigation}) {
+  const [query, setQuery] = React.useState({type: 'Food', name: ''});
   const [items, setItems] = React.useState([]);
   const [info, setInfo] = React.useState('');
-
-  const Item = (props) => {
+​
+  const Item = props => {
     return (
-      <TouchableOpacity style={styles.itemTouchable}
-          onPress={() => { navigation.navigate('Map', { item: props }); }}>
+      <TouchableOpacity
+        style={styles.itemTouchable}
+        onPress={() => {
+          navigation.navigate('Map', {item: props});
+        }}>
         <View style={styles.itemView}>
           <Text style={styles.itemName}>{props.name}</Text>
           <Text style={styles.itemQuantity}> ( {props.quantity} ) </Text>
@@ -96,62 +123,84 @@ const SearchResources = function ({ route, navigation }) {
       </TouchableOpacity>
     );
   };
-
+​
   const searchItem = () => {
     const payload = {
-      ...query
+      ...query,
     };
-
+​
     search(payload)
-      .then((results) => {
-        setInfo(`${results.length} result(s)`)
+      .then(results => {
+        setInfo(`${results.length} result(s)`);
         setItems(results);
       })
       .catch(err => {
         console.log(err);
-        Alert.alert('ERROR', 'Please try again. If the problem persists contact an administrator.', [{text: 'OK'}]);
+        Alert.alert(
+          'ERROR',
+          'Please try again. If the problem persists contact an administrator.',
+          [{text: 'OK'}],
+        );
       });
   };
-
+  const users = [
+    {Name: 'Mayuri', Address: 'Mumbai', Contact: '12349585849', Vacancy: "Yes"},
+    {Name: 'Ankita', Address: 'Mumbai', Contact: '12349585849', Vacancy: "No"},
+    {Name: 'Mayuri', Address: 'Mumbai', Contact: '12349585849', Vacancy: "Yes"},
+    {Name: 'Ankita', Address: 'Mumbai', Contact: '12349585849', Vacancy: "No"}
+  ];
   return (
     <View style={styles.outerView}>
       <View style={styles.inputsView}>
         <Text style={styles.label}>Type</Text>
         <PickerSelect
-          style={{ inputIOS: styles.selector }}
+          style={{inputIOS: styles.selector}}
           value={query.type}
-          onValueChange={(t) => setQuery({ ...query, type: t })}
+          onValueChange={t => setQuery({...query, type: t})}
           items={[
-              { label: 'Food', value: 'Food' },
-              { label: 'Help', value: 'Help' },
-              { label: 'Other', value: 'Other' }
+            {label: 'Beneficiary', value: 'beneficiary'},
+            {label: 'Volunteers', value: 'volunteers'},
+            {label: 'Organization', value: 'organization'},
+            {label: 'Events', value: 'events'},
           ]}
         />
-        <Text style={styles.label}>Name</Text>
-        <TextInput
-          style={styles.textInput}
-          value={query.name}
-          onChangeText={(t) => setQuery({ ...query, name: t})}
-          onSubmitEditing={searchItem}
-          returnKeyType='send'
-          enablesReturnKeyAutomatically={true}
-          placeholder='e.g., Tomotatoes'
-          blurOnSubmit={false}
-        />
+​
         <TouchableOpacity onPress={searchItem}>
           <Text style={styles.button}>Search</Text>
         </TouchableOpacity>
       </View>
-
-      <Text style={styles.searchResultText}>{info}</Text>
-
-      <FlatList style={styles.flatListView}
+      <ScrollView style={styles.outerView}>
+      <View style={styles.container}>
+        {Object.keys(users).map((key, i) => {
+          return (
+            <Card key={i} style={{padding: 10, margin: 10}}>
+              <View style={styles.joinView}>
+              <TouchableOpacity>
+                <Text style={styles.buttonJoin}>Join</Text>
+              </TouchableOpacity>
+              </View>
+​
+              {Object.keys(users[key]).map((item, index) => {
+                return (
+                  <Text style={styles.searchResultText}>
+                    {item} : {users[key][item]}
+                  </Text>
+                );
+              })}
+            </Card>
+          );
+        })}
+      </View>
+      </ScrollView>
+​
+      <FlatList
+        style={styles.flatListView}
         data={items}
-        renderItem={({ item }) => <Item {...item} />}
+        renderItem={({item}) => <Item {...item} />}
         keyExtractor={item => item.id || item['_id']}
       />
     </View>
   );
 };
-
+​
 export default SearchResources;

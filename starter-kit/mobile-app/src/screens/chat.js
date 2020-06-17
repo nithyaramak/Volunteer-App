@@ -1,17 +1,27 @@
 import React from 'react';
-import { StyleSheet, KeyboardAvoidingView, ScrollView, View, Text, TextInput, Button, TouchableOpacity, Linking } from 'react-native';
+import {
+  StyleSheet,
+  KeyboardAvoidingView,
+  ScrollView,
+  View,
+  Text,
+  TextInput,
+  Button,
+  TouchableOpacity,
+  Linking,
+} from 'react-native';
 
-import { session, message } from '../lib/utils';
+import {session, message} from '../lib/utils';
 
 const styles = StyleSheet.create({
   outerContainer: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#FFF'
+    backgroundColor: '#FFF',
   },
   innerContainer: {
     width: '100%',
-    height: '100%'
+    height: '100%',
   },
   scrollContainer: {
     flex: 1,
@@ -19,34 +29,34 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'flex-end',
     paddingHorizontal: 16,
-    paddingBottom: 5
+    paddingBottom: 5,
   },
   messageContainer: {
     flexDirection: 'column',
     marginTop: 10,
     alignItems: 'stretch',
-    justifyContent: 'flex-start'
+    justifyContent: 'flex-start',
   },
   waText: {
     fontFamily: 'IBMPlexSans-Medium',
-    backgroundColor: '#D0E2FF',
+    backgroundColor: '#ffca9b',
     padding: 10,
     alignSelf: 'flex-start',
-    maxWidth: '85%'
+    maxWidth: '85%',
   },
   myText: {
     fontFamily: 'IBMPlexSans-Medium',
     backgroundColor: '#F1F0EE',
     padding: 10,
     alignSelf: 'flex-end',
-    maxWidth: '80%'
+    maxWidth: '80%',
   },
   inputContainer: {
     backgroundColor: '#F1F0EE',
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16
+    padding: 16,
   },
   textInput: {
     fontFamily: 'IBMPlexSans-Medium',
@@ -55,32 +65,35 @@ const styles = StyleSheet.create({
     padding: 16,
     elevation: 2,
     paddingRight: 70,
-    marginBottom: 25
+    marginBottom: 25,
   },
   submitButton: {
     fontFamily: 'IBMPlexSans-Medium',
     position: 'absolute',
     right: 24,
-    bottom: 47
+    bottom: 47,
   },
   anchorLink: {
     fontFamily: 'IBMPlexSans-Medium',
-    color: '#1062FE',
-    padding: 2.5
+    color: '#ff7700',
+    padding: 2.5,
   },
   chatText: {
-    fontFamily: 'IBMPlexSans-Medium'
-  }
+    fontFamily: 'IBMPlexSans-Medium',
+  },
 });
 
-const Chat = function ({ navigation }) {
+const Chat = function({navigation}) {
   const [input, setInput] = React.useState('');
   const [sessionId, setSessionId] = React.useState('');
   const [messages, setMessages] = React.useState([]);
 
-  const MapLink = (props) => {
-    let locationText = ''
-    const loc = (typeof props.location === 'string') ? props.location.split(',') : props.location;
+  const MapLink = props => {
+    let locationText = '';
+    const loc =
+      typeof props.location === 'string'
+        ? props.location.split(',')
+        : props.location;
     if (loc.length !== 2 || isNaN(loc[0]) || isNaN(loc[1])) {
       locationText = loc;
     } else {
@@ -88,37 +101,51 @@ const Chat = function ({ navigation }) {
     }
 
     return (
-      <TouchableOpacity onPress={() => { navigation.navigate('Map', { item: props }); }}>
-        <Text style={styles.chatText}>  {props.quantity} at <Text style={styles.anchorLink}>{locationText}</Text> </Text>
+      <TouchableOpacity
+        onPress={() => {
+          navigation.navigate('Map', {item: props});
+        }}>
+        <Text style={styles.chatText}>
+          {' '}
+          {props.quantity} at{' '}
+          <Text style={styles.anchorLink}>{locationText}</Text>{' '}
+        </Text>
       </TouchableOpacity>
-    )
+    );
   };
 
-  const MailLink = (props) => {
+  const MailLink = props => {
     return (
-      <TouchableOpacity onPress={() => { Linking.openURL(`mailto:${props.contact}?subject=${props.name}`) }}>
-        <Text style={styles.chatText}>  {props.quantity} from <Text style={styles.anchorLink}>{props.contact}</Text> </Text>
+      <TouchableOpacity
+        onPress={() => {
+          Linking.openURL(`mailto:${props.contact}?subject=${props.name}`);
+        }}>
+        <Text style={styles.chatText}>
+          {' '}
+          {props.quantity} from{' '}
+          <Text style={styles.anchorLink}>{props.contact}</Text>{' '}
+        </Text>
       </TouchableOpacity>
-    )
+    );
   };
 
-  const Resource = (props) => {
+  const Resource = props => {
     if (props.location) {
-      return <MapLink {...props} />
+      return <MapLink {...props} />;
     } else {
-      return <MailLink {...props} />
+      return <MailLink {...props} />;
     }
   };
-  
-  const Message = (props) => {
+
+  const Message = props => {
     const style = props.fromInput ? styles.myText : styles.waText;
     return (
       <View style={styles.messageContainer}>
         <View style={style}>
           <Text style={styles.chatText}>{props.text}</Text>
-          { props.resources.map((resource, i) => {
-            resource.key = `sup-${(new Date()).getTime()}-${i}`;
-            return <Resource {...resource} />
+          {props.resources.map((resource, i) => {
+            resource.key = `sup-${new Date().getTime()}-${i}`;
+            return <Resource {...resource} />;
           })}
         </View>
       </View>
@@ -126,30 +153,31 @@ const Chat = function ({ navigation }) {
   };
 
   const getSession = () => {
-    return session()
-      .then(sid => {
-        setSessionId(sid);
-        return sid;
-      });
+    return session().then(sid => {
+      setSessionId(sid);
+      return sid;
+    });
   };
 
-  const handleMessageResponse = (response) => {
+  const handleMessageResponse = response => {
     if (!response.ok) {
-      throw new Error(response.statusText || response.message || response.status);
+      throw new Error(
+        response.statusText || response.message || response.status,
+      );
     } else {
       return response.json().then(response => {
         addMessages(response.generic, false, response.resources);
-      })
+      });
     }
-  }
+  };
 
   const sendMessage = () => {
     const payload = {
       text: input.trim(),
-      sessionid: sessionId
+      sessionid: sessionId,
     };
 
-    addMessages([{ text: input }], true);
+    addMessages([{text: input}], true);
 
     setInput('');
 
@@ -157,36 +185,36 @@ const Chat = function ({ navigation }) {
       .then(handleMessageResponse)
       .catch(e => {
         getSession()
-          .then((sid) => {
+          .then(sid => {
             return message({
               text: payload.text,
-              sessionid: sid
+              sessionid: sid,
             });
           })
           .then(handleMessageResponse)
           .catch(err => {
-            console.log(err)
-            addMessages([{
-              text: 'ERROR: Please try again. If the problem persists contact an administrator.'
-            }]);
+            console.log(err);
+            addMessages([
+              {
+                text:
+                  'ERROR: Please try again. If the problem persists contact an administrator.',
+              },
+            ]);
           });
       });
   };
 
   const addMessages = (msgs, fromInput, resources) => {
-    const date = (new Date()).getTime();
+    const date = new Date().getTime();
     const result = msgs.map((r, i) => {
       return {
         text: r.text,
         fromInput: fromInput,
-        resources: resources || []
+        resources: resources || [],
       };
     });
 
-    setMessages(msgs => [
-      ...msgs,
-      ...result
-    ]);
+    setMessages(msgs => [...msgs, ...result]);
   };
 
   React.useEffect(() => {
@@ -199,15 +227,15 @@ const Chat = function ({ navigation }) {
     <View style={styles.outerContainer}>
       <KeyboardAvoidingView
         style={styles.innerContainer}
-        behavior='height'
+        behavior="height"
         keyboardVerticalOffset={Platform.select({
           ios: 78,
-          android: 0
-        })} >
+          android: 0,
+        })}>
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           {messages.map((msg, i) => {
-            msg.key = `msg-${(new Date()).getTime()}-${i}`;
-            return <Message {...msg} />
+            msg.key = `msg-${new Date().getTime()}-${i}`;
+            return <Message {...msg} />;
           })}
         </ScrollView>
         <View style={styles.inputContainer}>
@@ -216,13 +244,13 @@ const Chat = function ({ navigation }) {
             value={input}
             onChangeText={setInput}
             onSubmitEditing={sendMessage}
-            returnKeyType='send'
+            returnKeyType="send"
             enablesReturnKeyAutomatically={true}
-            placeholder='Ask a question...'
+            placeholder="Ask a question..."
             blurOnSubmit={false}
           />
           <View style={styles.submitButton}>
-            {input !== '' && <Button title='Send' onPress={sendMessage} />}
+            {input !== '' && <Button title="Send" onPress={sendMessage} />}
           </View>
         </View>
       </KeyboardAvoidingView>

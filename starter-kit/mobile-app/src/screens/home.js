@@ -64,36 +64,17 @@ const styles = StyleSheet.create({
 const Home = () => (
   <View style={styles.center}>
     <ScrollView style={styles.scroll}>
-      <Image
-        style={styles.image}
-        source={require('../images/2020-cfc-512.png')}
-      />
-      <Text style={styles.subtitle}>Starter Kit</Text>
-      <Text style={styles.title}>Community Collaboration</Text>
+      <Text style={styles.title}>Guardian Angels</Text>
       <Text style={styles.content}>
-        There is a growing interest in enabling communities to cooperate among
-        themselves to solve problems in times of crisis, whether it be to
-        advertise where supplies are held, offer assistance for collections, or
-        other local services like volunteer deliveries.
+        There is a great deal of satisfaction that comes from making a difference to people in your local community.
+        There is a growing interest in enabling communities to cooperate among themselves to solve problems in times of crisis
       </Text>
       <Text style={styles.content}>
-        What is needed is a solution that empowers communities to easily connect
-        and provide this information to each other.
+        What is needed is a solution that connects volunteers with people to understand and help with their basic needs.
       </Text>
       <Text style={styles.content}>
-        This solution starter kit provides a mobile application, along with
-        server-side components, that serves as the basis for developers to build
-        out a community cooperation application that addresses local needs for
-        food, equipment, and resources.
+      Our motive is to build a self-sufficient society, connecting the helping hands to the needy ones.
       </Text>
-      <View style={styles.buttonGroup}>
-        <TouchableOpacity onPress={() => Linking.openURL('https://developer.ibm.com/callforcode')}>
-          <Text style={styles.button}>Learn more</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => Linking.openURL('https://github.com/Call-for-Code/Solution-Starter-Kit-Cooperation-2020')}>
-          <Text style={styles.button}>Get the code</Text>
-        </TouchableOpacity>
-      </View>
     </ScrollView>
   </View>
 );
