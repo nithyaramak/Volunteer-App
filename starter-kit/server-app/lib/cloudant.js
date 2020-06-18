@@ -1,3 +1,4 @@
+const helper = require('./helper.js');
 const Cloudant = require('@cloudant/cloudant');
 
 const cloudant_id = process.env.CLOUDANT_ID || '<cloudant_id>'
@@ -141,41 +142,31 @@ function deleteById(id, rev) {
  * Create a resource with the specified attributes
  * 
  * @param {String} type - the type of the item
- * @param {String} name - the name of the item
- * @param {String} description - the description of the item
- * @param {String} quantity - the quantity available 
- * @param {String} location - the GPS location of the item
- * @param {String} contact - the contact info 
- * @param {String} userID - the ID of the user 
+ * @param {Json} params - the params in the request
  * 
  * @return {Promise} - promise that will be resolved (or rejected)
  * when the call to the DB completes
  */
-function create(type, name, description, quantity, location, contact, userID) {
-    return new Promise((resolve, reject) => {
-        let itemId = uuidv4();
-        let whenCreated = Date.now();
-        let item = {
-            _id: itemId,
-            id: itemId,
-            type: type,
-            name: name,
-            description: description,
-            quantity: quantity,
-            location: location,
-            contact: contact,
-            userID: userID,
-            whenCreated: whenCreated
-        };
-        db.insert(item, (err, result) => {
-            if (err) {
-                console.log('Error occurred: ' + err.message, 'create()');
-                reject(err);
-            } else {
-                resolve({ data: { createdId: result.id, createdRevId: result.rev }, statusCode: 201 });
-            }
-        });
-    });
+function create(type, params) {
+  return new Promise((resolve, reject) => {
+      let id = uuidv4();
+      let item = null;
+      if(type == "resources"){
+        item = helper.constructResourceObject(id, params)
+      }else if(type == "events"){
+        item = helper.constructEventObject(id, params)
+      }else if(type == "users"){
+        item = helper.constructUserObject(id, params)
+      }
+      db.insert(item, (err, result) => {
+          if (err) {
+              console.log('Error occurred: ' + err.message, 'create()');
+              reject(err);
+          } else {
+              resolve({result: result, statusCode: 201 });
+          }
+      });
+  });
 }
 
 /**
@@ -235,10 +226,92 @@ function info() {
         });
 };
 
+function logout(id, params) {
+  return new Promise((resolve, reject) => {
+    console.log(params.id)
+      db.get(params.id, (err, document) => {
+          if (err) {
+              resolve({statusCode: err.statusCode});
+          } else {
+              let item = {
+                  _id: document._id,
+                  _rev: document._rev, // Specifiying the _rev turns this into an update
+                  token: null,
+                  id: document.id,
+                  name: document.name,
+                  email: document.email,
+                  address: document.address,
+                  userType: document.userType,
+                  cause: document.cause,
+                  contact: document.contact,
+                  pan: document.pan,
+                  password: document.password,
+                  whenCreated: document.whenCreated,
+                  whenUpdated: Date.now()     
+              }
+              db.insert(item, (err, result) => {
+                  if (err) {
+                      console.log('Error occurred: ' + err.message, 'create()');
+                      reject(err);
+                  } else {
+                      resolve({ message: "Logged out successfully", statusCode: 200 });
+                  }
+              });
+          }            
+      })
+  });
+}
+
+function login(id, params) {
+  return new Promise((resolve, reject) => {
+
+    let selector = {"contact": params.contact, "id": id}
+    db.find({ 
+        'selector': selector
+    },(err, documents) => {
+          if (err) {
+              resolve({statusCode: err.statusCode});
+          } else {
+            let document = documents.docs.length > 0 ? documents.docs[0] : null
+              if(document != null && params.password == document.password){
+                let item = {
+                  _id: document._id,
+                  _rev: document._rev, // Specifiying the _rev turns this into an update
+                  id: document.id,
+                  token: helper.randomToken(),
+                  name: document.name,
+                  email: document.email,
+                  address: document.address,
+                  userType: document.userType,
+                  cause: document.cause,
+                  contact: document.contact,
+                  pan: document.pan,
+                  password: document.password,
+                  whenCreated: document.whenCreated,
+                  whenUpdated: Date.now()     
+                }
+                db.insert(item, (err, result) => {
+                  if (err) {
+                      console.log('Error occurred: ' + err.message, 'create()');
+                      reject(err);
+                  } else {
+                      resolve({ token: document.token, _id: document._id, statusCode: 200 });
+                  }
+              });
+              }else{
+                resolve({ "error": "Please check username and password", statusCode: 404 });
+              }
+          }            
+      })
+  });
+}
+
 module.exports = {
     deleteById: deleteById,
     create: create,
     update: update,
     find: find,
-    info: info
+    info: info,
+    logout: logout,
+    login: login
   };

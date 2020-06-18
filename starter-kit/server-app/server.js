@@ -188,16 +188,9 @@ app.post('/api/resource', (req, res) => {
   if (!req.body.contact) {
     return res.status(422).json({ errors: "A method of conact must be provided"});
   }
-  const type = req.body.type;
-  const name = req.body.name;
-  const description = req.body.description || '';
-  const userID = req.body.userID || '';
-  const quantity = req.body.quantity || 1;
-  const location = req.body.location || '';
-  const contact = req.body.contact;
 
   cloudant
-    .create(type, name, description, quantity, location, contact, userID)
+    .create("resources", req.body)
     .then(data => {
       if (data.statusCode != 201) {
         res.sendStatus(data.statusCode)
@@ -245,6 +238,93 @@ app.delete('/api/resource/:id', (req, res) => {
   cloudant
     .deleteById(req.params.id)
     .then(statusCode => res.sendStatus(statusCode))
+    .catch(err => handleError(res, err));
+});
+
+app.post('/api/event', (req, res) => {
+  if (!req.body.description) {
+    return res.status(422).json({ errors: "Description of event must be provided"});
+  }
+  if (!req.body.name) {
+    return res.status(422).json({ errors: "Name of event must be provided"});
+  }
+  if (!req.body.contact) {
+    return res.status(422).json({ errors: "A method of conact must be provided"});
+  }
+
+  cloudant
+    .create("events", req.body)
+    .then(data => {
+      if (data.statusCode != 201) {
+        res.sendStatus(data.statusCode)
+      } else {
+        res.send(data.data)
+      }
+    })
+    .catch(err => handleError(res, err));
+});
+
+let userTypes = ["Beneficiary", "Volunteer", "Organisation"]
+let causeTypes = ["Food", "Help", "Others"]
+app.post('/signup', (req, res) => {
+  if (!req.body.userType) {
+    return res.status(422).json({ errors: "User type must be provided"});
+  }
+  if (!userTypes.includes(req.body.userType)) {
+    return res.status(422).json({ errors: "User type must be one of " + userTypes.toString()});
+  }
+  if (!req.body.type) {
+    return res.status(422).json({ errors: "Cause/Needs must be provided"});
+  }
+  if (!causeTypes.includes(req.body.type)) {
+    return res.status(422).json({ errors: "Cause/Needs must be one of " + causeTypes.toString()});
+  }
+  if (!req.body.name) {
+    return res.status(422).json({ errors: "Name of user must be provided"});
+  }
+  if (!req.body.email) {
+    return res.status(422).json({ errors: "Email of user must be provided"});
+  }
+  if (!req.body.contact) {
+    return res.status(422).json({ errors: "A method of contact must be provided"});
+  }
+
+  cloudant
+    .create("users", req.body)
+    .then(data => {
+      if (data.statusCode != 201) {
+        res.sendStatus(data.statusCode)
+      } else {
+        res.send(data)
+      }
+    })
+    .catch(err => handleError(res, err));
+});
+
+
+app.delete('/logout/:id', (req, res) => {
+  cloudant
+    .logout("users", req.params)
+    .then(data => {
+      if (data.statusCode != 201) {
+        res.sendStatus(data.statusCode)
+      } else {
+        res.send({"message": "Logged out successfully"})
+      }
+    })
+    .catch(err => handleError(res, err));
+});
+
+app.post('/login', (req, res) => {
+  cloudant
+    .login("users", req.body)
+    .then(data => {
+      if (data.statusCode != 201) {
+        res.sendStatus(data.statusCode)
+      } else {
+        res.send(data)
+      }
+    })
     .catch(err => handleError(res, err));
 });
 
