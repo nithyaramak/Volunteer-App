@@ -12,7 +12,6 @@ import PickerSelect from 'react-native-picker-select';
 import { ScrollView } from 'react-native-gesture-handler';
 import {search} from '../lib/utils';
 import {Card} from 'react-native-shadow-cards';
-​
 const styles = StyleSheet.create({
   outerView: {
     backgroundColor: '#FFF',
@@ -102,12 +101,10 @@ const styles = StyleSheet.create({
     alignItems: "flex-end" 
   },
 });
-​
 const SearchResources = function({route, navigation}) {
   const [query, setQuery] = React.useState({type: 'Food', name: ''});
   const [items, setItems] = React.useState([]);
   const [info, setInfo] = React.useState('');
-​
   const Item = props => {
     return (
       <TouchableOpacity
@@ -123,12 +120,10 @@ const SearchResources = function({route, navigation}) {
       </TouchableOpacity>
     );
   };
-​
   const searchItem = () => {
     const payload = {
       ...query,
     };
-​
     search(payload)
       .then(results => {
         setInfo(`${results.length} result(s)`);
@@ -164,7 +159,6 @@ const SearchResources = function({route, navigation}) {
             {label: 'Events', value: 'events'},
           ]}
         />
-​
         <TouchableOpacity onPress={searchItem}>
           <Text style={styles.button}>Search</Text>
         </TouchableOpacity>
@@ -192,7 +186,6 @@ const SearchResources = function({route, navigation}) {
         })}
       </View>
       </ScrollView>
-​
       <FlatList
         style={styles.flatListView}
         data={items}
@@ -202,5 +195,4 @@ const SearchResources = function({route, navigation}) {
     </View>
   );
 };
-​
 export default SearchResources;
