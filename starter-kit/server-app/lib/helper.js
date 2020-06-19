@@ -32,6 +32,11 @@ function constructEventObject(id, params){
     volunteerCount: params.volunteerCount,
     funds: params.funds,
     contact: params.contact,
+    address: {
+      city: params.city,
+      state: params.state,
+      country: params.country
+    },
     whenCreated: whenCreated
   };
   return item;
@@ -44,7 +49,11 @@ function constructUserObject(id, params){
     id: "users",
     name: params.name,
     email: params.email,
-    address: params.address,
+    address: {
+      city: params.city,
+      state: params.state,
+      country: params.country
+    },
     password: params.password,
     userType: params.userType,
     cause: params.cause,

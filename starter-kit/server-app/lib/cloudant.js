@@ -141,7 +141,7 @@ function deleteById(id, rev) {
 /**
  * Create a resource with the specified attributes
  * 
- * @param {String} type - the type of the item
+ * @param {String} type - the type of the item(event, user, resource)
  * @param {Json} params - the params in the request
  * 
  * @return {Promise} - promise that will be resolved (or rejected)
@@ -151,21 +151,37 @@ function create(type, params) {
   return new Promise((resolve, reject) => {
       let id = uuidv4();
       let item = null;
+      let selector = null;
       if(type == "resources"){
+        selector = {"contact": params.contact, "id": type}
         item = helper.constructResourceObject(id, params)
       }else if(type == "events"){
         item = helper.constructEventObject(id, params)
+        selector = {"name": params.name, "id": type}
       }else if(type == "users"){
-        item = helper.constructUserObject(id, params)
+        selector = {"contact": params.contact, "id": type}
+        item = helper.constructUserObject(id, params, null)
       }
-      db.insert(item, (err, result) => {
-          if (err) {
-              console.log('Error occurred: ' + err.message, 'create()');
-              reject(err);
-          } else {
-              resolve({result: result, statusCode: 201 });
+
+      db.find({ 'selector': selector},(err, documents) => {
+        if (err) {
+          console.log('Error occurred: ' + err.message, 'find()');
+          reject(err);
+        } else {
+          if(documents.docs.length == 0 ){
+            db.insert(item, (err, result) => {
+              if (err) {
+                  console.log('Error occurred: ' + err.message, 'create()');
+                  reject(err);
+              } else {
+                  resolve({result: item, statusCode: 201 });
+              }
+            });
+          }else{
+            resolve({"error": type.substring(0, type.length - 1).toUpperCase() + " already exists", statusCode: 400 });
           }
-      });
+        }
+      })
   });
 }
 
@@ -264,7 +280,6 @@ function logout(id, params) {
 
 function login(id, params) {
   return new Promise((resolve, reject) => {
-
     let selector = {"contact": params.contact, "id": id}
     db.find({ 
         'selector': selector
@@ -281,7 +296,11 @@ function login(id, params) {
                   token: helper.randomToken(),
                   name: document.name,
                   email: document.email,
-                  address: document.address,
+                  address: {
+                    city: document.address,
+                    state: document.state,
+                    country: document.country
+                  },
                   userType: document.userType,
                   cause: document.cause,
                   contact: document.contact,
@@ -295,7 +314,7 @@ function login(id, params) {
                       console.log('Error occurred: ' + err.message, 'create()');
                       reject(err);
                   } else {
-                      resolve({ token: document.token, _id: document._id, statusCode: 200 });
+                      resolve({ "result": item, statusCode: 200 });
                   }
               });
               }else{

@@ -193,9 +193,10 @@ app.post('/api/resource', (req, res) => {
     .create("resources", req.body)
     .then(data => {
       if (data.statusCode != 201) {
-        res.sendStatus(data.statusCode)
+        res.status(data.statusCode)
+        res.send(data)
       } else {
-        res.send(data.data)
+        res.send(data)
       }
     })
     .catch(err => handleError(res, err));
@@ -256,9 +257,10 @@ app.post('/api/event', (req, res) => {
     .create("events", req.body)
     .then(data => {
       if (data.statusCode != 201) {
-        res.sendStatus(data.statusCode)
+        res.status(data.statusCode)
+        res.send(data)
       } else {
-        res.send(data.data)
+        res.send(data)
       }
     })
     .catch(err => handleError(res, err));
@@ -293,7 +295,8 @@ app.post('/signup', (req, res) => {
     .create("users", req.body)
     .then(data => {
       if (data.statusCode != 201) {
-        res.sendStatus(data.statusCode)
+        res.status(data.statusCode);
+        res.send(data)
       } else {
         res.send(data)
       }
@@ -319,7 +322,8 @@ app.post('/login', (req, res) => {
   cloudant
     .login("users", req.body)
     .then(data => {
-      if (data.statusCode != 201) {
+      console.log(data)
+      if (data.statusCode != 200) {
         res.sendStatus(data.statusCode)
       } else {
         res.send(data)
@@ -331,5 +335,5 @@ app.post('/login', (req, res) => {
 const server = app.listen(port, () => {
    const host = server.address().address;
    const port = server.address().port;
-   console.log(`SolutionStarterKitCooperationServer listening at http://${host}:${port}`);
+   console.log(`Voluntee App listening at http://${host}:${port}`);
 });
