@@ -6,7 +6,6 @@ const cloudant_apikey = process.env.CLOUDANT_IAM_APIKEY || '<cloudant_apikey>';
 
 // UUID creation
 const uuidv4 = require('uuid/v4');
-
 var cloudant = new Cloudant({
     account: cloudant_id,
     plugins: {
@@ -84,28 +83,22 @@ const dbCloudantConnect = () => {
  *          could be located that matches. 
  *  reject(): the err object from the underlying data store
  */
-function find(type, partialName, userID) {
+function find(id, params) {
     return new Promise((resolve, reject) => {
-        let selector = {}
-        if (type) {
-            selector['type'] = type;
+        let selector = {"id": id}
+        if(params.isActive == true){
+          selector["isActive"] = params.isActive
         }
-        if (partialName) {
-            let search = `(?i).*${partialName}.*`;
-            selector['name'] = {'$regex': search};
-
+        if(params.name != null){
+          selector["name"] = params.name
         }
-        if (userID) {
-            selector['userID'] = userID;
-        }
-        
         db.find({ 
             'selector': selector
         }, (err, documents) => {
             if (err) {
                 reject(err);
             } else {
-                resolve({ data: JSON.stringify(documents.docs), statusCode: 200});
+                resolve({ result: documents.docs, statusCode: 200});
             }
         });
     });
@@ -147,41 +140,83 @@ function deleteById(id, rev) {
  * @return {Promise} - promise that will be resolved (or rejected)
  * when the call to the DB completes
  */
-function create(type, params) {
+function createEvent(params, headers) {
   return new Promise((resolve, reject) => {
-      let id = uuidv4();
-      let item = null;
-      let selector = null;
-      if(type == "resources"){
-        selector = {"contact": params.contact, "id": type}
-        item = helper.constructResourceObject(id, params)
-      }else if(type == "events"){
-        item = helper.constructEventObject(id, params)
-        selector = {"name": params.name, "id": type}
-      }else if(type == "users"){
-        selector = {"contact": params.contact, "id": type}
-        item = helper.constructUserObject(id, params, null)
-      }
-
-      db.find({ 'selector': selector},(err, documents) => {
+      db.find({'selector': {"token": headers.token, "id": "users"}}, (err, users) => {
         if (err) {
-          console.log('Error occurred: ' + err.message, 'find()');
-          reject(err);
-        } else {
-          if(documents.docs.length == 0 ){
-            db.insert(item, (err, result) => {
-              if (err) {
-                  console.log('Error occurred: ' + err.message, 'create()');
-                  reject(err);
-              } else {
-                  resolve({result: item, statusCode: 201 });
+          reject(err)
+      } else {
+        let user = users.docs.length > 0 ? users.docs[0] : null
+        if(user != null){
+          let id = uuidv4();
+          let item = helper.constructEventObject(id, params, user)
+          let selector = {"name": params.name, "id": "events"}
+          db.find({ 'selector': selector},(err, documents) => {
+            if (err) {
+              console.log('Error occurred: ' + err.message, 'find()');
+              reject(err);
+            } else {
+              if(documents.docs.length == 0 ){
+                db.insert(item, (err, result) => {
+                  if (err) {
+                      console.log('Error occurred: ' + err.message, 'create()');
+                      reject(err);
+                  } else {
+                      resolve({result: item, statusCode: 201 });
+                  }
+                });
+              }else{
+                resolve({"error": "Event already exists", statusCode: 400 });
               }
-            });
-          }else{
-            resolve({"error": type.substring(0, type.length - 1).toUpperCase() + " already exists", statusCode: 400 });
-          }
+            }
+          })
+        }else{
+          resolve({"error": "Unauthorised, please login to continue", statusCode: 401 });
         }
-      })
+      }
+    })
+  });
+}
+
+function createUser(params, headers) {
+  return new Promise((resolve, reject) => {
+          let id = uuidv4();
+          let item = helper.constructUserObject(id, params, null);
+          let selector = {"contact": params.contact, "id": "users"}
+          db.find({ 'selector': selector},(err, documents) => {
+            if (err) {
+              console.log('Error occurred: ' + err.message, 'find()');
+              reject(err);
+            } else {
+              if(documents.docs.length == 0 ){
+                db.insert(item, (err, result) => {
+                  if (err) {
+                      console.log('Error occurred: ' + err.message, 'create()');
+                      reject(err);
+                  } else {
+                      resolve({result: item, statusCode: 201 });
+                  }
+                });
+              }else{
+                resolve({"error": "User already exists", statusCode: 400 });
+              }
+            }
+          })
+  });
+}
+
+function createRequest(params) {
+  return new Promise((resolve, reject) => {
+    let id = uuidv4();
+    let item = helper.constructRequestObject(id, params)
+    db.insert(item, (err, result) => {
+      if (err) {
+        console.log('Error occurred: ' + err.message, 'create()');
+        reject(err);
+      } else {
+        resolve({result: item, statusCode: 201 });
+      }
+    });
   });
 }
 
@@ -203,34 +238,60 @@ function create(type, params) {
  * @return {Promise} - promise that will be resolved (or rejected)
  * when the call to the DB completes
  */
-function update(id, type, name, description, quantity, location, contact, userID) {
+function updateEvent(params, headers, body) {
     return new Promise((resolve, reject) => {
-        db.get(id, (err, document) => {
-            if (err) {
-                resolve({statusCode: err.statusCode});
-            } else {
-                let item = {
-                    _id: document._id,
-                    _rev: document._rev,            // Specifiying the _rev turns this into an update
-                }
-                if (type) {item["type"] = type} else {item["type"] = document.type};
-                if (name) {item["name"] = name} else {item["name"] = document.name};
-                if (description) {item["description"] = description} else {item["description"] = document.description};
-                if (quantity) {item["quantity"] = quantity} else {item["quantity"] = document.quantity};
-                if (location) {item["location"] = location} else {item["location"] = document.location};
-                if (contact) {item["contact"] = contact} else {item["contact"] = document.contact};
-                if (userID) {item["userID"] = userID} else {item["userID"] = document.userID};
- 
-                db.insert(item, (err, result) => {
-                    if (err) {
-                        console.log('Error occurred: ' + err.message, 'create()');
-                        reject(err);
-                    } else {
-                        resolve({ data: { updatedRevId: result.rev }, statusCode: 200 });
-                    }
-                });
+      db.find({'selector': {"token": headers.token, "id": "users"}}, (err, users) => {
+        if (err) {
+          reject(err)
+      } else {
+        let user = users.docs.length > 0 ? users.docs[0] : null
+          if(user != null){
+            db.get(params.id, (err, document) => {
+              if (err) {
+                  resolve({statusCode: err.statusCode});
+              } else {
+                if(document.createdBy._id == user._id){
+                  let item = {
+                      _id: document._id,
+                      _rev: document._rev,            // Specifiying the _rev turns this into an update
+                      id: document.id,
+                      volunteerPresent: document.volunteerPresent,
+                      isActive: document.isActive,
+                      createdBy: document.createdBy,
+                      whenCreated: document.whenCreated,
+                      whenUpdated: Date.now(),
+                      volunteers : document.volunteers
+                  }
+                  if (body.name) {item["name"] = body.name} else {item["name"] = document.name};
+                  if (body.description) {item["description"] = body.description} else {item["description"] = document.description};
+                  if (body.contact) {item["contact"] = body.contact} else {item["contact"] = document.contact};
+                  if (body.causeType) {item["causeType"] = body.causeType} else {item["causeType"] = document.causeType};
+                  if (body.volunteerRequired) {item["volunteerRequired"] = body.volunteerRequired} else {item["volunteerRequired"] = document.volunteerRequired};
+                  if (body.funds) {item["funds"] = body.funds} else {item["funds"] = document.funds};
+                  let address = {}
+                  if (body.city) {address["city"] = body.city} else {address["city"] = document.address.city};
+                  if (body.state) {address["state"] = body.state} else {address["state"] = document.address.state};
+                  if (body.country) {address["country"] = body.country} else {address["country"] = document.address.country};
+                  item["address"] = address
+  
+                  db.insert(item, (err, result) => {
+                      if (err) {
+                          console.log('Error occurred: ' + err.message, 'create()');
+                          reject(err);
+                      } else {
+                          resolve({ result: item, statusCode: 200 });
+                      }
+                  });
+              }else{
+                resolve({ "error": "Doesn't have permission to update event", statusCode: 400 });
+              }
             }            
-        })
+          })
+        }else{
+          resolve({"error": "Unauthorised, please login to continue", statusCode: 401 });
+        }
+    }
+  })
     });
 }
 
@@ -247,7 +308,7 @@ function logout(id, params) {
     console.log(params.id)
       db.get(params.id, (err, document) => {
           if (err) {
-              resolve({statusCode: err.statusCode});
+              reject(err)
           } else {
               let item = {
                   _id: document._id,
@@ -258,7 +319,7 @@ function logout(id, params) {
                   email: document.email,
                   address: document.address,
                   userType: document.userType,
-                  cause: document.cause,
+                  causeTypecause: document.causeType,
                   contact: document.contact,
                   pan: document.pan,
                   password: document.password,
@@ -285,7 +346,7 @@ function login(id, params) {
         'selector': selector
     },(err, documents) => {
           if (err) {
-              resolve({statusCode: err.statusCode});
+            return resolve({statusCode: err.statusCode});
           } else {
             let document = documents.docs.length > 0 ? documents.docs[0] : null
               if(document != null && params.password == document.password){
@@ -296,13 +357,9 @@ function login(id, params) {
                   token: helper.randomToken(),
                   name: document.name,
                   email: document.email,
-                  address: {
-                    city: document.address,
-                    state: document.state,
-                    country: document.country
-                  },
+                  address: document.address,
                   userType: document.userType,
-                  cause: document.cause,
+                  causeType: document.causeType,
                   contact: document.contact,
                   pan: document.pan,
                   password: document.password,
@@ -325,12 +382,179 @@ function login(id, params) {
   });
 }
 
+function closeEventOrRequest(params){
+  return new Promise((resolve, reject) => {
+    db.get(params.id, (err, document) => {
+      if(err){
+        reject(err)
+      }else{
+        let item = {
+          _id: document._id,
+          _rev: document._rev, // Specifiying the _rev turns this into an update
+          id: document.id,
+          name: document.name,
+          description: document.description,
+          address: document.address,
+          causeType: document.causeType,
+          contact: document.contact,
+          volunteers: document.volunteers,
+          isActive: false,
+          volunteerRequired: document.volunteerRequired,
+          volunteerPresent: document.volunteerPresent,
+          funds: document.funds,
+          createdBy: document.createdBy,
+          whenCreated: document.whenCreated,
+          whenUpdated: Date.now()     
+        }
+        db.insert(item, (err, result) => {
+          if (err) {
+              console.log('Error occurred: ' + err.message, 'create()');
+              reject(err);
+          } else {
+              resolve({"result": item, statusCode: 200 });
+          }
+        })
+      }
+    })
+  })
+}
+
+function joinEventOrRequest(params, headers){
+  return new Promise((resolve, reject) => {
+    db.find({'selector': {"token": headers.token, "id": "users"}}, (err, users) => {
+      if (err) {
+        reject(err)
+    } else {
+      let user = users.docs.length > 0 ? users.docs[0] : null
+        if(user != null){
+          db.get(params.id, (err, document) => {
+            if(err){
+              reject(err)
+            }else{
+              if(document.id == "events" && document.volunteerPresent == document.volunteerRequired){
+                return resolve({"error": "No more volunteers required", statusCode: 400 });
+              }
+              let volunteerList = document.volunteers
+              for(i = 0; i < volunteerList.length ; i++){
+                if(volunteerList[i]._id == user._id){
+                  return resolve({"error": "Volunteer already present", statusCode: 400 });
+                }
+              }
+              volunteerList.push({
+                _id: user._id,
+                _rev: user._rev,
+                id: "users",
+                name: user.name,
+                email: user.email,
+                address: user.address,
+                userType: user.userType,
+                causeType: user.causeType,
+                contact: user.contact,
+                pan: user.pan
+              })
+              let item = {
+                _id: document._id,
+                _rev: document._rev, // Specifiying the _rev turns this into an update
+                id: document.id,
+                name: document.name,
+                description: document.description,
+                address: document.address,
+                causeType: document.causeType,
+                contact: document.contact,
+                volunteerRequired: document.volunteerRequired,
+                volunteerPresent: document.volunteerPresent + 1,
+                volunteers: volunteerList,
+                isActive: document.isActive,
+                volunteerCount: document.volunteerCount,
+                funds: document.funds,
+                createdBy: document.createdBy,
+                whenCreated: document.whenCreated,
+                whenUpdated: Date.now()     
+              }
+              db.insert(item, (err, result) => {
+                if (err) {
+                    console.log('Error occurred: ' + err.message, 'create()');
+                    reject(err);
+                } else {
+                  return resolve({"result": item, statusCode: 200 });
+                }
+              })
+            }
+          })
+        }else{
+          return resolve({"error": "Unauthorised, please login to continue", statusCode: 401 });
+        }
+      }
+    })
+  })
+}
+
+function getMyRequests(headers){
+  return new Promise((resolve, reject) => {
+    if(headers.token == null){
+      return resolve({"error": "Unauthorised, please login to continue", statusCode: 401 });
+    }
+    db.find({'selector': {"token": headers.token, "id": "users"}}, (err, users) => {
+      if (err) {
+        reject(err)
+    } else {
+      let user = users.docs.length > 0 ? users.docs[0] : null
+        if(user != null){
+          let selector = {"id": "requests", "volunteers": {"$elemMatch" : { "_id" : { "$in" : [user._id] } } } }
+          db.find({'selector' : selector}, (err, documents) => {
+            if(err){
+              reject(err)
+            }else{
+              resolve({ result: documents.docs, statusCode: 200});
+            }
+          })
+        }else{
+          return resolve({"error": "Unauthorised, please login to continue", statusCode: 401 });
+        }
+      }
+    })
+  })
+}
+
+function getMyEvents(headers){
+  return new Promise((resolve, reject) => {
+    if(headers.token == null){
+      return resolve({"error": "Unauthorised, please login to continue", statusCode: 401 });
+    }
+    db.find({'selector': {"token": headers.token, "id": "users"}}, (err, users) => {
+      if (err) {
+        reject(err)
+    } else {
+      let user = users.docs.length > 0 ? users.docs[0] : null
+        if(user != null){
+          let selector = {"id": "events", "volunteers": {"$elemMatch" : { "_id" : { "$in" : [user._id] } } } }
+          db.find({'selector' : selector}, (err, documents) => {
+            if(err){
+              reject(err)
+            }else{
+              resolve({ result: documents.docs, statusCode: 200});
+            }
+          })
+        }else{
+          return resolve({"error": "Unauthorised, please login to continue", statusCode: 401 });
+        }
+      }
+    })
+  })
+}
+
 module.exports = {
     deleteById: deleteById,
-    create: create,
-    update: update,
+    createEvent: createEvent,
+    updateEvent: updateEvent,
     find: find,
     info: info,
     logout: logout,
-    login: login
+    login: login,
+    createUser: createUser,
+    createRequest: createRequest,
+    closeEventOrRequest: closeEventOrRequest,
+    joinEventOrRequest: joinEventOrRequest,
+    getMyRequests: getMyRequests,
+    getMyEvents: getMyEvents
   };

@@ -22,22 +22,71 @@ function constructResourceObject(id, params){
   return item;
 }
 
-function constructEventObject(id, params){
-  let whenCreated = Date.now();
+function constructEventObject(id, params, currentUser){
+  let now = Date.now();
   let item = {
     _id: id,
     id: "events",
     name: params.name,
     description: params.description,
-    volunteerCount: params.volunteerCount,
-    funds: params.funds,
+    volunteerRequired: params.volunteerRequired || 1,
+    volunteerPresent: 1,
+    funds: params.funds || 0,
     contact: params.contact,
     address: {
       city: params.city,
       state: params.state,
       country: params.country
     },
-    whenCreated: whenCreated
+    whenCreated: now,
+    whenUpdated: now,
+    volunteers: [{
+      _id: currentUser._id,
+      _rev: currentUser._rev,
+      id: "users",
+      name: currentUser.name,
+      email: currentUser.email,
+      address: currentUser.address,
+      userType: currentUser.userType,
+      causeType: currentUser.causeType,
+      contact: currentUser.contact,
+      pan: currentUser.pan
+    }],
+    createdBy: {
+      _id: currentUser._id,
+      _rev: currentUser._rev,
+      id: "users",
+      name: currentUser.name,
+      email: currentUser.email,
+      address: currentUser.address,
+      userType: currentUser.userType,
+      causeType: currentUser.causeType,
+      contact: currentUser.contact,
+      pan: currentUser.pan
+    },
+    isActive: true
+  };
+  return item;
+}
+
+function constructRequestObject(id, params){
+  let now = Date.now();
+  let item = {
+    _id: id,
+    id: "requests",
+    name: params.name,
+    description: params.description,
+    contact: params.contact,
+    address: {
+      city: params.city,
+      state: params.state,
+      country: params.country
+    },
+    causeType: params.causeType,
+    whenCreated: now,
+    whenUpdated: now,
+    volunteers: [],
+    isActive: true
   };
   return item;
 }
@@ -56,7 +105,7 @@ function constructUserObject(id, params){
     },
     password: params.password,
     userType: params.userType,
-    cause: params.cause,
+    causeType: params.causeType,
     contact: params.contact,
     pan: params.pan,
     token: randomToken(),
@@ -70,5 +119,6 @@ module.exports = {
   constructResourceObject: constructResourceObject,
   constructEventObject: constructEventObject,
   constructUserObject: constructUserObject,
-  randomToken: randomToken
+  randomToken: randomToken,
+  constructRequestObject: constructRequestObject
 };

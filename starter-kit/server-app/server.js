@@ -131,70 +131,21 @@ app.post('/api/message', (req, res) => {
 });
 
 /**
- * Get a list of resources
+ * Get a list of events
  *
  * The query string may contain the following qualifiers:
  * 
- * - type
- * - name
- * - userID
+ * - isActive
  *
- * A list of resource objects will be returned (which can be an empty list)
+ * A list of event objects will be returned (which can be an empty list)
  */
-app.get('/api/resource', (req, res) => {
-  const type = req.query.type;
-  const name = req.query.name;
-  const userID = req.query.userID;
+app.get('/api/events', (req, res) => {
   cloudant
-    .find(type, name, userID)
+    .find("events", req.params)
     .then(data => {
       if (data.statusCode != 200) {
-        res.sendStatus(data.statusCode)
-      } else {
-        res.send(data.data)
-      }
-    })
-    .catch(err => handleError(res, err));
-});
-
-/**
- * Create a new resource
- *
- * The body must contain:
- * 
- * - type
- * - name
- * - contact
- * - userID
- *
- * The body may also contain:
- * 
- * - description
- * - quantity (which will default to 1 if not included)
- * 
- * The ID and rev of the resource will be returned if successful
- */
-let types = ["Food", "Other", "Help"]
-app.post('/api/resource', (req, res) => {
-  if (!req.body.type) {
-    return res.status(422).json({ errors: "Type of item must be provided"});
-  }
-  if (!types.includes(req.body.type)) {
-    return res.status(422).json({ errors: "Type of item must be one of " + types.toString()});
-  }
-  if (!req.body.name) {
-    return res.status(422).json({ errors: "Name of item must be provided"});
-  }
-  if (!req.body.contact) {
-    return res.status(422).json({ errors: "A method of conact must be provided"});
-  }
-
-  cloudant
-    .create("resources", req.body)
-    .then(data => {
-      if (data.statusCode != 201) {
+        res.send(data)
         res.status(data.statusCode)
-        res.send(data)
       } else {
         res.send(data)
       }
@@ -203,45 +154,29 @@ app.post('/api/resource', (req, res) => {
 });
 
 /**
- * Update new resource
+ * Get a list of requests
  *
- * The body may contain any of the valid attributes, with their new values. Attributes
- * not included will be left unmodified.
+ * The query string may contain the following qualifiers:
  * 
- * The new rev of the resource will be returned if successful
+ * - isActive
+ *
+ * A list of request objects will be returned (which can be an empty list)
  */
-
-app.patch('/api/resource/:id', (req, res) => {
-  const type = req.body.type || '';
-  const name = req.body.name || '';
-  const description = req.body.description || '';
-  const userID = req.body.userID || '';
-  const quantity = req.body.quantity || '';
-  const location = req.body.location || '';
-  const contact = req.body.contact || '';
-
+app.get('/api/requests', (req, res) => {
   cloudant
-    .update(req.params.id, type, name, description, quantity, location, contact, userID)
+    .find("requests", req.params)
     .then(data => {
       if (data.statusCode != 200) {
-        res.sendStatus(data.statusCode)
+        res.send(data)
+        res.status(data.statusCode)
       } else {
-        res.send(data.data)
+        res.send(data)
       }
     })
     .catch(err => handleError(res, err));
 });
 
-/**
- * Delete a resource
- */
-app.delete('/api/resource/:id', (req, res) => {
-  cloudant
-    .deleteById(req.params.id)
-    .then(statusCode => res.sendStatus(statusCode))
-    .catch(err => handleError(res, err));
-});
-
+//create event
 app.post('/api/event', (req, res) => {
   if (!req.body.description) {
     return res.status(422).json({ errors: "Description of event must be provided"});
@@ -254,7 +189,7 @@ app.post('/api/event', (req, res) => {
   }
 
   cloudant
-    .create("events", req.body)
+    .createEvent(req.body, req.headers)
     .then(data => {
       if (data.statusCode != 201) {
         res.status(data.statusCode)
@@ -266,8 +201,37 @@ app.post('/api/event', (req, res) => {
     .catch(err => handleError(res, err));
 });
 
+//create request
+app.post('/api/request', (req, res) => {
+  if (!req.body.causeType) {
+    return res.status(422).json({ errors: "Cause/Needs must be provided"});
+  }
+  if (!causeTypes.includes(req.body.causeType)) {
+    return res.status(422).json({ errors: "Cause/Needs must be one of " + causeTypes.toString()});
+  }
+  if (!req.body.name) {
+    return res.status(422).json({ errors: "Name of requestor must be provided"});
+  }
+  if (!req.body.contact) {
+    return res.status(422).json({ errors: "A method of contact must be provided"});
+  }
+
+  cloudant
+    .createRequest(req.body)
+    .then(data => {
+      if (data.statusCode != 201) {
+        res.status(data.statusCode)
+        res.send(data)
+      } else {
+        res.send(data)
+      }
+    })
+    .catch(err => handleError(res, err));
+});
+
+//signup into the system
 let userTypes = ["Beneficiary", "Volunteer", "Organisation"]
-let causeTypes = ["Food", "Help", "Others"]
+let causeTypes = ["Food/Water", "Medicine", "Shelter", "Educational Help", "Daily Essentials"]
 app.post('/signup', (req, res) => {
   if (!req.body.userType) {
     return res.status(422).json({ errors: "User type must be provided"});
@@ -275,10 +239,10 @@ app.post('/signup', (req, res) => {
   if (!userTypes.includes(req.body.userType)) {
     return res.status(422).json({ errors: "User type must be one of " + userTypes.toString()});
   }
-  if (!req.body.type) {
+  if (!req.body.causeType) {
     return res.status(422).json({ errors: "Cause/Needs must be provided"});
   }
-  if (!causeTypes.includes(req.body.type)) {
+  if (!causeTypes.includes(req.body.causeType)) {
     return res.status(422).json({ errors: "Cause/Needs must be one of " + causeTypes.toString()});
   }
   if (!req.body.name) {
@@ -292,7 +256,7 @@ app.post('/signup', (req, res) => {
   }
 
   cloudant
-    .create("users", req.body)
+    .createUser(req.body, req.headers)
     .then(data => {
       if (data.statusCode != 201) {
         res.status(data.statusCode);
@@ -304,7 +268,7 @@ app.post('/signup', (req, res) => {
     .catch(err => handleError(res, err));
 });
 
-
+//logout from the system
 app.delete('/logout/:id', (req, res) => {
   cloudant
     .logout("users", req.params)
@@ -318,6 +282,7 @@ app.delete('/logout/:id', (req, res) => {
     .catch(err => handleError(res, err));
 });
 
+//login into the system
 app.post('/login', (req, res) => {
   cloudant
     .login("users", req.body)
@@ -325,6 +290,111 @@ app.post('/login', (req, res) => {
       console.log(data)
       if (data.statusCode != 200) {
         res.sendStatus(data.statusCode)
+      } else {
+        res.send(data)
+      }
+    })
+    .catch(err => handleError(res, err));
+});
+
+//close request after completion
+app.patch('/api/request/close/:id', (req, res) => {
+  cloudant
+    .closeEventOrRequest(req.params)
+    .then(data => {
+      if (data.statusCode != 200) {
+        res.status(data.statusCode)
+        res.send(data)
+      } else {
+        res.send(data)
+      }
+    })
+    .catch(err => handleError(res, err));
+});
+
+//close event after completion
+app.patch('/api/event/close/:id', (req, res) => {
+  cloudant
+    .closeEventOrRequest(req.params)
+    .then(data => {
+      if (data.statusCode != 200) {
+        res.status(data.statusCode)
+        res.send(data)
+      } else {
+        res.send(data)
+      }
+    })
+    .catch(err => handleError(res, err));
+});
+
+//volunter joins to participate in event
+app.patch('/api/event/join/:id', (req, res) => {
+  cloudant
+    .joinEventOrRequest(req.params, req.headers)
+    .then(data => {
+      if (data.statusCode != 200) {
+        res.status(data.statusCode)
+        res.send(data)
+      } else {
+        res.send(data)
+      }
+    })
+    .catch(err => handleError(res, err));
+});
+
+//volunteer joins to participate in request
+app.patch('/api/request/join/:id', (req, res) => {
+  cloudant
+    .joinEventOrRequest(req.params, req.headers)
+    .then(data => {
+      if (data.statusCode != 200) {
+        res.status(data.statusCode)
+        res.send(data)
+      } else {
+        res.send(data)
+      }
+    })
+    .catch(err => handleError(res, err));
+});
+
+//event update
+app.patch('/api/event/:id', (req, res) => {
+  cloudant
+    .updateEvent(req.params, req.headers, req.body)
+    .then(data => {
+      if (data.statusCode != 200) {
+        res.status(data.statusCode)
+        res.send(data)
+      } else {
+        res.send(data)
+      }
+    })
+    .catch(err => handleError(res, err));
+});
+
+//list of events assigned or created by volunteer
+app.get('/api/event/list', (req, res) => {
+  cloudant
+    .getMyEvents(req.headers)
+    .then(data => {
+      if (data.statusCode != 200) {
+        res.status(data.statusCode)
+        res.send(data)
+      } else {
+        res.send(data)
+      }
+    })
+    .catch(err => handleError(res, err));
+});
+
+//list of requests assigned to volunteer
+app.get('/api/request/list', (req, res) => {
+  cloudant
+    .getMyRequests(req.headers)
+    .then(data => {
+      if (data.statusCode != 200) {
+        res.status(data.statusCode)
+        res.send(data)
       } else {
         res.send(data)
       }
