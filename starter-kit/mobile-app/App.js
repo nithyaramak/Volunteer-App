@@ -18,7 +18,7 @@ import Map from './src/screens/map';
 import Login from './src/screens/login'
 import Register from './src/screens/register'
 import EventRegistration from './src/screens/event-registration';
-import { HomeIcon, DonateIcon, SearchIcon, LoginIcon } from './src/images/svg-icons';
+import { HomeIcon, ChatIcon, SearchIcon, LoginIcon } from './src/images/svg-icons';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -64,13 +64,7 @@ const TabLayout = () => (
         tabBarIcon: ({color}) => (<LoginIcon fill={color} />)
       }}
     />
-{/*   <Tab.Screen
-      name='Event Register'
-      component={EventRegisterStackLayout}
-      options={{
-        tabBarIcon: ({color}) => (<LoginIcon fill={color} />)
-      }}
-    />*/}
+ 
     <Tab.Screen
       name='Search'
       component={SearchStackLayout}
@@ -78,6 +72,13 @@ const TabLayout = () => (
         tabBarIcon: ({color}) => (<SearchIcon fill={color} />)
       }}
     />
+     {/* <Tab.Screen
+      name='Chat'
+      component={ChatStackLayout}
+      options={{
+        tabBarIcon: ({color}) => (<ChatIcon fill={color} />)
+      }}
+    /> */}
   </Tab.Navigator>
 );
 
@@ -101,6 +102,13 @@ const EventRegisterStackLayout = () => (
     <Stack.Screen name='Event Registration' component={EventRegistration}  />
   </Stack.Navigator>
 );
+
+// const ChatStackLayout = () => (
+//   <Stack.Navigator>
+//       <Stack.Screen name='Chat' component={Chat} />
+//   </Stack.Navigator>
+// );
+
 
 const App = () => {
   const [isLoading, setIsLoading] = React.useState(true);
