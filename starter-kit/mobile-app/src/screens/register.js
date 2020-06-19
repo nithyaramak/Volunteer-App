@@ -12,17 +12,18 @@ import PickerSelect from 'react-native-picker-select';
 import {CheckedIcon, UncheckedIcon, RegisterIcon} from '../images/svg-icons';
 import Geolocation from '@react-native-community/geolocation';
 
-import {add, userID} from '../lib/utils';
+import {apiCall, userID} from '../lib/utils';
 
 const styles = StyleSheet.create({
   outerView: {
     flex: 1,
-    padding: 22,
+    padding: 20,
     backgroundColor: '#fff',
   },
   splitView: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginBottom: 10,
   },
   typeArea: {
     width: '40%',
@@ -40,7 +41,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     padding: 16,
     marginBottom: 25,
-    color: "#FFF"
+    color: '#000',
   },
   quantityArea: {
     width: '40%',
@@ -50,9 +51,8 @@ const styles = StyleSheet.create({
     flex: 1,
     borderColor: '#ff8c00',
     borderWidth: 2,
-    padding: 14,
-    marginBottom: 25,
-    
+    padding: 5,
+    marginBottom: 20,
   },
   checkboxContainer: {
     flexDirection: 'row',
@@ -85,38 +85,68 @@ const styles = StyleSheet.create({
 
 const Register = function({navigation}) {
   const clearItem = {
-    userID: userID(),
-    type: 'Event',
-    userType: 'Beneficiary',
     name: '',
-    address: '',
+    password:'',
+    contact: '',
+    userType: 'Volunteer',
+    type: 'Food',
+    email: 'abc@startv.com',
+    description: 'adbc',
+    city: '',
+    state: '',
+    country: '',
     pan: '',
-    contact: ''
-    };
+  };
+
   const [item, setItem] = React.useState(clearItem);
 
   React.useEffect(() => {
     setItem({...clearItem});
   }, []);
 
+  const validations = payload => {
+    console.log(payload.name);
+    if (payload.name.length === 0 || !payload.name.match(/[A-Za-z]/ig)) {
+      Alert.alert('Please enter valid name');
+      return false;
+    }
+    if (payload.password.length === 0) {
+      Alert.alert('Please enter password');
+      return false;
+    }
+    if (payload.password.length < 8) {
+      Alert.alert('password length should be more than 8 characters');
+      return false;
+    }
+    if (payload.contact.length < 10) {
+      Alert.alert('Contact number cannot be less than 10 digits');
+      return false;
+    }
+    if (payload.city.length === 0) {
+      Alert.alert('Please enter city name');
+      return false;
+    }
+    return true;
+  };
   const sendItem = () => {
     const payload = {
       ...item,
-    };
-
-    add(payload)
-      .then(() => {
-        Alert.alert('Thank you!', 'Registration Successful.', [{text: 'OK'}]);
-        setItem({...clearItem});
-      })
-      .catch(err => {
-        console.log(err,"err----");
-        Alert.alert(
-          'ERROR',
-          'Please try again. If the problem persists contact an administrator.',
-          [{text: 'OK'}],
-        );
-      });
+    }, url = `signup`
+    if (validations(payload)) {
+      apiCall(payload, url)
+        .then(() => {
+          Alert.alert('Thank you!', 'Registration Successful.', [{text: 'OK'}]);
+          setItem({...clearItem});
+        })
+        .catch(err => {
+          console.log(err, 'err----');
+          Alert.alert(
+            'ERROR',
+            'Please try again. If the problem persists contact an administrator.',
+            [{text: 'OK'}],
+          );
+        });
+    }
   };
 
   return (
@@ -127,12 +157,25 @@ const Register = function({navigation}) {
         value={item.userType}
         onValueChange={t => setItem({...item, userType: t})}
         items={[
-          {label: 'Beneficiary', value: 'Beneficiary'},
           {label: 'Volunteer', value: 'Volunteer'},
+          {label: 'Beneficiary', value: 'Beneficiary'},
           {label: 'Organization', value: 'Organization'},
         ]}
       />
-
+      <Text style={styles.label}>Cause / Needs</Text>
+      <PickerSelect
+        style={{inputIOS: styles.selector}}
+        value={item.type}
+        onValueChange={t => setItem({...item, type: t})}
+        items={[
+          {label: 'Food', value: 'Food'},
+          {label: 'Medicine', value: 'Medicine'},
+          {label: 'Shelter', value: 'Shelter'},
+          {label: 'Food/Water', value: 'Food/Water'},
+          {label: 'Educational Help', value: 'Educational Help'},
+          {label: 'Daily Essentials', value: 'Daily Essentials'},
+        ]}
+      />
       <Text style={styles.label}>Name</Text>
       <TextInput
         style={styles.textInput}
@@ -142,6 +185,18 @@ const Register = function({navigation}) {
         returnKeyType="send"
         enablesReturnKeyAutomatically={true}
         placeholder="Name"
+        blurOnSubmit={false}
+      />
+        <Text style={styles.label}>Password</Text>
+      <TextInput
+        style={styles.textInput}
+        value={item.password}
+        onChangeText={t => setItem({...item, password: t})}
+        onSubmitEditing={sendItem}
+        returnKeyType="send"
+        enablesReturnKeyAutomatically={true}
+        secureTextEntry={true}
+        placeholder="Password"
         blurOnSubmit={false}
       />
       <Text style={styles.label}>Contact</Text>
@@ -154,15 +209,35 @@ const Register = function({navigation}) {
         enablesReturnKeyAutomatically={true}
         placeholder="Contact"
       />
-      <Text style={styles.label}>Address</Text>
+      <Text style={styles.label}>City</Text>
       <TextInput
         style={styles.textInput}
-        value={item.address}
-        onChangeText={t => setItem({...item, address: t})}
+        value={item.city}
+        onChangeText={t => setItem({...item, city: t})}
         onSubmitEditing={sendItem}
         returnKeyType="send"
         enablesReturnKeyAutomatically={true}
-        placeholder="Address"
+        placeholder="City"
+      />
+      <Text style={styles.label}>State</Text>
+      <TextInput
+        style={styles.textInput}
+        value={item.state}
+        onChangeText={t => setItem({...item, state: t})}
+        onSubmitEditing={sendItem}
+        returnKeyType="send"
+        enablesReturnKeyAutomatically={true}
+        placeholder="State"
+      />
+      <Text style={styles.label}>Country</Text>
+      <TextInput
+        style={styles.textInput}
+        value={item.country}
+        onChangeText={t => setItem({...item, country: t})}
+        onSubmitEditing={sendItem}
+        returnKeyType="send"
+        enablesReturnKeyAutomatically={true}
+        placeholder="Country"
       />
 
       <Text style={styles.label}>PAN Card Details</Text>
@@ -176,17 +251,6 @@ const Register = function({navigation}) {
         placeholder="PAN ID"
       />
 
-        <Text style={styles.label}>Cause / Needs</Text>
-        <PickerSelect
-            style={{inputIOS: styles.selector}}
-            value={item.cause}
-            onValueChange={t => setItem({...item, cause: t})}
-                items={[
-                {label: 'Food', value: 'Food'},
-                {label: 'Help', value: 'Help'},
-                {label: 'Other', value: 'Other'},
-                ]}
-        />
       {item.type !== '' &&
         item.name.trim() !== '' &&
         item.contact.trim() !== '' && (

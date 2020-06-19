@@ -35,13 +35,14 @@ export const search = (query) => {
   });
 };
 
-export const add = (item) => {
-  return fetch(`${serverUrl}/api/resource`, {
+export const apiCall = (item, url) => {
+  return fetch(`${serverUrl}/${url}`, {
     method: 'POST',
     mode: 'no-cors',
     cache: 'no-cache',
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'Accept': "application/json"
     },
     body: JSON.stringify(item)
   }).then((response) => {

@@ -8,13 +8,13 @@ import {
 } from 'react-native';
 import {ScrollView} from 'react-native-gesture-handler';
 
-import {add} from '../lib/utils';
+import {apiCall} from '../lib/utils';
 
 const styles = StyleSheet.create({
   outerView: {
     flex: 1,
     padding: 22,
-    backgroundColor: '#fff',
+    backgroundColor: '#fff'
   },
   label: {
     fontFamily: 'IBMPlexSans-Medium',
@@ -39,12 +39,12 @@ const styles = StyleSheet.create({
     padding: 12,
     textAlign: 'center',
     marginTop: 15,
-  },
+  }
 });
 
 const Login = function({navigation}) {
   const clearItem = {
-    userName: '',
+    contact: '',
     password: ''
     };
   const [item, setItem] = React.useState(clearItem);
@@ -56,9 +56,9 @@ const Login = function({navigation}) {
   const sendItem = () => {
     const payload = {
       ...item,
-    };
+    }, url = `login`
 
-    add(payload)
+    apiCall(payload, url)
       .then(() => {
         Alert.alert('Success', 'Login Successful.', [{text: 'OK'}]);
         setItem({...clearItem});
@@ -75,16 +75,15 @@ const Login = function({navigation}) {
 
   return (
     <ScrollView style={styles.outerView}>
-
-      <Text style={styles.label}>UserName</Text>
+      <Text style={styles.label}>Contact</Text>
       <TextInput
         style={styles.textInput}
-        value={item.userName}
-        onChangeText={t => setItem({...item, userName: t})}
+        value={item.contact}
+        onChangeText={t => setItem({...item, contact: t})}
         onSubmitEditing={sendItem}
         returnKeyType="send"
         enablesReturnKeyAutomatically={true}
-        placeholder="UserName"
+        placeholder="contact"
         blurOnSubmit={false}
       />
       <Text style={styles.label}>Password</Text>
