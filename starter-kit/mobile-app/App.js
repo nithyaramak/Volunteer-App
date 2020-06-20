@@ -15,6 +15,7 @@ import Map from './src/screens/map';
 import Login from './src/screens/login';
 import Register from './src/screens/register';
 import Account from './src/screens/user-account';
+import RequestForm from './src/screens/request-form';
 import EventRegistration from './src/screens/event-registration';
 import {
   HomeIcon,
@@ -28,12 +29,14 @@ const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
 const logoutUser = navigation => {
-  console.log('logout');
-  getToken().then(user =>
-    user &&
-    logout(user._id).then(() => {
-      AsyncStorage.removeItem('user').then(() => navigation.navigate('Login'));
-    }),
+  getToken().then(
+    user =>
+      user &&
+      logout(user._id).then(() => {
+        AsyncStorage.removeItem('user').then(() =>
+          navigation.navigate('Login'),
+        );
+      }),
   );
 };
 
@@ -83,7 +86,7 @@ const TabLayout = props => (
     tabBarOptions={tabBarOptions}>
     <Tab.Screen
       name="Home"
-      component={Home}
+      component={HomeStackLayout}
       options={{
         tabBarIcon: ({color}) => <HomeIcon fill={color} />,
       }}
@@ -96,33 +99,32 @@ const TabLayout = props => (
         tabBarIcon: ({color}) => <SearchIcon fill={color} />,
       }}
     />
- {props.showEventTab ? (
-   <React.Fragment>
-    <Tab.Screen
-      name="Register Event"
-      component={EventRegisterStackLayout}
-      options={{
-        tabBarIcon: ({color}) => <RegisterIcon fill={color} />,
-      }}
-    />
-    <Tab.Screen
-    name="Account"
-    component={AccountStackLayout}
-    options={{
-      tabBarIcon: ({color}) => <LoginIcon fill={color} />,
-    }}
-  /></React.Fragment>
- ) : 
-   
-    <Tab.Screen
-      name="Login"
-      component={LoginStackLayout}
-      options={{
-        tabBarIcon: ({color}) => <LoginIcon fill={color} />,
-      }}
-    />}
-
-
+    {props.showEventTab ? (
+      <React.Fragment>
+        <Tab.Screen
+          name="Register Event"
+          component={EventRegisterStackLayout}
+          options={{
+            tabBarIcon: ({color}) => <RegisterIcon fill={color} />,
+          }}
+        />
+        <Tab.Screen
+          name="Account"
+          component={AccountStackLayout}
+          options={{
+            tabBarIcon: ({color}) => <LoginIcon fill={color} />,
+          }}
+        />
+      </React.Fragment>
+    ) : (
+      <Tab.Screen
+        name="Login"
+        component={LoginStackLayout}
+        options={{
+          tabBarIcon: ({color}) => <LoginIcon fill={color} />,
+        }}
+      />
+    )}
   </Tab.Navigator>
 );
 
@@ -135,6 +137,13 @@ const SearchStackLayout = () => (
     />
     <Stack.Screen name="Chat" component={Chat} />
     <Stack.Screen name="Map" component={Map} />
+  </Stack.Navigator>
+);
+
+const HomeStackLayout = () => (
+  <Stack.Navigator>
+    <Stack.Screen name="Home" component={Home} />
+    <Stack.Screen name="Register Request" component={RequestForm} />
   </Stack.Navigator>
 );
 
@@ -152,7 +161,7 @@ const AccountStackLayout = () => (
       component={Account}
       options={AccountStackOptions}
     />
-     <Stack.Screen name="Login" component={Login} />
+    <Stack.Screen name="Login" component={Login} />
   </Stack.Navigator>
 );
 
@@ -166,7 +175,6 @@ const App = () => {
   const [isLoading, setIsLoading] = React.useState(true),
     [user, setUser] = React.useState(''),
     value = getToken().then(value => setUser(value && value.name));
-console.log(user)
   React.useEffect(() => {
     setTimeout(() => {
       setIsLoading(false);
@@ -178,7 +186,7 @@ console.log(user)
   } else {
     return (
       <NavigationContainer>
-        <TabLayout showEventTab={user}/>
+        <TabLayout showEventTab={user} />
       </NavigationContainer>
     );
   }

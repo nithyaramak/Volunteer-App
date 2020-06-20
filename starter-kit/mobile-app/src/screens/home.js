@@ -2,13 +2,9 @@ import React from 'react';
 import {
   StyleSheet,
   View,
-  Image,
   Text,
   TouchableOpacity,
-  Button,
-  Linking,
   ImageBackground,
-  AsyncStorage
 } from 'react-native';
 import {ScrollView} from 'react-native-gesture-handler';
 import {getToken} from '../lib/utils';
@@ -27,27 +23,12 @@ const styles = StyleSheet.create({
     paddingBottom: 25,
     paddingTop: 120,
   },
-  image: {
-    alignSelf: 'flex-start',
-    height: '20%',
-    width: '50%',
-    resizeMode: 'contain',
-  },
   title: {
     fontFamily: 'IBMPlexSans-Medium',
     fontSize: 36,
     color: '#323232',
     paddingBottom: 10,
     fontWeight: 'bold',
-  },
-  subtitle: {
-    fontFamily: 'IBMPlexSans-Light',
-    fontSize: 24,
-    color: '#323232',
-    textDecorationColor: '#D0E2FF',
-    textDecorationLine: 'underline',
-    paddingBottom: 5,
-    paddingTop: 20,
   },
   content: {
     fontFamily: 'IBMPlexSans-Light',
@@ -57,13 +38,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     backgroundColor: '#fff',
   },
-  buttonGroup: {
-    flex: 1,
-    paddingTop: 15,
-    width: 175,
-  },
   button: {
-    backgroundColor: '#1062FE',
+    backgroundColor: '#ff8c00',
     color: '#FFFFFF',
     fontFamily: 'IBMPlexSans-Medium',
     fontSize: 16,
@@ -71,6 +47,7 @@ const styles = StyleSheet.create({
     padding: 12,
     textAlign: 'center',
     marginTop: 15,
+    width: 200,
   },
   backgroundImage: {
     flex: 1,
@@ -79,12 +56,14 @@ const styles = StyleSheet.create({
     zIndex: -1,
     resizeMode: 'cover', // or 'stretch'
   },
+  requestView: {
+    alignItems: 'center',
+  },
 });
 
-const Home = () => {
-
-  const [user, setUser] = React.useState(""),
-    value = getToken().then((value)=>  setUser(value ? value.name: ""));
+const Home = ({navigation}) => {
+  const [user, setUser] = React.useState(''),
+    value = getToken().then(value => setUser(value ? value.name : ''));
 
   return (
     <View style={styles.center}>
@@ -92,7 +71,7 @@ const Home = () => {
         style={styles.backgroundImage}
         source={require('../images/GettyImages-1188864563Yevhenii-Dubinko.jpg')}>
         <ScrollView style={styles.scroll}>
-          <Text style={styles.title}>Guardian Angels  {user}</Text>
+          <Text style={styles.title}>Guardian Angels {user}</Text>
           <Text style={styles.content}>
             There is a great deal of satisfaction that comes from making a
             difference to people in your local community. There is a growing
@@ -107,6 +86,14 @@ const Home = () => {
             Our motive is to build a self-sufficient society, connecting the
             helping hands to the needy ones.
           </Text>
+          <View style={styles.requestView}>
+            <TouchableOpacity
+              onPress={() => {
+                navigation.navigate('Register Request');
+              }}>
+              <Text style={styles.button}>Raise a Request</Text>
+            </TouchableOpacity>
+          </View>
         </ScrollView>
       </ImageBackground>
     </View>
