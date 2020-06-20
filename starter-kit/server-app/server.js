@@ -216,13 +216,8 @@ app.post('/api/request', (req, res) => {
   if (!req.body.contact) {
     return res.status(422).json({ errors: "A method of contact must be provided"});
   }
-  volunteer = cloudant.findVolunteerForRequest(req.body.city);
-  console.log("printing voluteer");
-  console.log(volunteer);
-  params = req.body;
-  params['volunteer'] = volunteer;
   cloudant
-    .createRequest(params)
+    .createRequest(req.body)
     .then(data => {
       // when request is created update volunteers active & total request count if volunteer is found
       if (data.statusCode != 201) {

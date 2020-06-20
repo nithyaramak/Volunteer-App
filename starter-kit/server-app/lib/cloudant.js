@@ -208,15 +208,20 @@ function createUser(params, headers) {
 function createRequest(params) {
   return new Promise((resolve, reject) => {
     let id = uuidv4();
-    let item = helper.constructRequestObject(id, params)
-    db.insert(item, (err, result) => {
-      if (err) {
-        console.log('Error occurred: ' + err.message, 'create()');
-        reject(err);
-      } else {
-        resolve({result: item, statusCode: 201 });
-      }
-    });
+    findVolunteerForRequest(params.city)
+      .then(data => {
+        let volunteer = data.data;
+        params['volunteers'] = volunteer;
+        let item = helper.constructRequestObject(id, params)
+        db.insert(item, (err, result) => {
+          if (err) {
+            console.log('Error occurred: ' + err.message, 'create()');
+            reject(err);
+          } else {
+            resolve({result: item, statusCode: 201 });
+          }
+        });
+      });
   });
 }
 
@@ -553,18 +558,19 @@ function findVolunteerForRequest(city){
       "city": city
     }
   };
-  
-  db.find({ 'selector': selector},(err, documents) => {
-    if (err) {
-      console.log('Error occurred: ' + err.message, 'find()');
-      reject(err);
-    } else {
-      // if(documents.docs.length > 0 ) {
-        console.log("printing available volunteer");
-        console.log(documents.docs);
-      // }
-    }
-  })
+  return new Promise((resolve, reject) => {
+    db.find({ 'selector': selector},(err, documents) => {
+      if (err) {
+        resolve({"data": []});
+      } else {
+        if(documents.docs.length > 0 ) {
+          resolve({"data":[documents.docs[0]]});
+        } else {
+          resolve({"data": []});
+        }
+      }
+    })
+  });
 }
 
 module.exports = {
