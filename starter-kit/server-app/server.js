@@ -191,6 +191,7 @@ app.post('/api/event', (req, res) => {
   cloudant
     .createEvent(req.body, req.headers)
     .then(data => {
+      // when event is created update volunteers active & total request count if volunteer is found
       if (data.statusCode != 201) {
         res.status(data.statusCode)
         res.send(data)
@@ -215,10 +216,15 @@ app.post('/api/request', (req, res) => {
   if (!req.body.contact) {
     return res.status(422).json({ errors: "A method of contact must be provided"});
   }
-
+  volunteer = cloudant.findVolunteerForRequest(req.body.city);
+  console.log("printing voluteer");
+  console.log(volunteer);
+  params = req.body;
+  params['volunteer'] = volunteer;
   cloudant
-    .createRequest(req.body)
+    .createRequest(params)
     .then(data => {
+      // when request is created update volunteers active & total request count if volunteer is found
       if (data.statusCode != 201) {
         res.status(data.statusCode)
         res.send(data)
@@ -233,6 +239,8 @@ app.post('/api/request', (req, res) => {
 let userTypes = ["Beneficiary", "Volunteer", "Organisation"]
 let causeTypes = ["Food/Water", "Medicine", "Shelter", "Educational Help", "Daily Essentials"]
 app.post('/signup', (req, res) => {
+  req.body['activeRequestCount'] = 0;
+  req.body['totalRequestCount'] = 0;
   if (!req.body.userType) {
     return res.status(422).json({ errors: "User type must be provided"});
   }
@@ -302,6 +310,7 @@ app.patch('/api/request/close/:id', (req, res) => {
   cloudant
     .closeEventOrRequest(req.params)
     .then(data => {
+      // when request is closed update volunteers active request count if volunteer is found
       if (data.statusCode != 200) {
         res.status(data.statusCode)
         res.send(data)
@@ -317,6 +326,7 @@ app.patch('/api/event/close/:id', (req, res) => {
   cloudant
     .closeEventOrRequest(req.params)
     .then(data => {
+      // when event is closed update volunteers active request count if volunteer is found
       if (data.statusCode != 200) {
         res.status(data.statusCode)
         res.send(data)
