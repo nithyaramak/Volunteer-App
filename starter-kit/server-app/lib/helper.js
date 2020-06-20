@@ -85,7 +85,7 @@ function constructRequestObject(id, params){
     causeType: params.causeType,
     whenCreated: now,
     whenUpdated: now,
-    volunteers: [],
+    volunteers: params.volunteers,
     isActive: true
   };
   return item;
@@ -101,7 +101,8 @@ function constructUserObject(id, params){
     address: {
       city: params.city,
       state: params.state,
-      country: params.country
+      country: params.country,
+      pincode: params.pincode
     },
     password: params.password,
     userType: params.userType,
@@ -109,6 +110,8 @@ function constructUserObject(id, params){
     contact: params.contact,
     pan: params.pan,
     token: randomToken(),
+    activeRequestCount: params.activeRequestCount,
+    totalRequestCount: params.totalRequestCount,
     whenCreated: now,
     whenUpdated: now
   };

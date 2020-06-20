@@ -543,18 +543,43 @@ function getMyEvents(headers){
   })
 }
 
-module.exports = {
-    deleteById: deleteById,
-    createEvent: createEvent,
-    updateEvent: updateEvent,
-    find: find,
-    info: info,
-    logout: logout,
-    login: login,
-    createUser: createUser,
-    createRequest: createRequest,
-    closeEventOrRequest: closeEventOrRequest,
-    joinEventOrRequest: joinEventOrRequest,
-    getMyRequests: getMyRequests,
-    getMyEvents: getMyEvents
+function assignVolunteerForRequest(city){
+  let selector = {
+    "id": "users",
+    "activeRequestCount": {
+      "$lt": 6
+    },
+    "address": {
+      "city": city
+    }
   };
+  
+  db.find({ 'selector': selector},(err, documents) => {
+    if (err) {
+      console.log('Error occurred: ' + err.message, 'find()');
+      reject(err);
+    } else {
+      // if(documents.docs.length > 0 ) {
+        console.log("printing available volunteer");
+        console.log(documents.docs);
+      // }
+    }
+  })
+}
+
+module.exports = {
+  deleteById: deleteById,
+  createEvent: createEvent,
+  updateEvent: updateEvent,
+  find: find,
+  info: info,
+  logout: logout,
+  login: login,
+  createUser: createUser,
+  createRequest: createRequest,
+  closeEventOrRequest: closeEventOrRequest,
+  joinEventOrRequest: joinEventOrRequest,
+  getMyRequests: getMyRequests,
+  getMyEvents: getMyEvents,
+  assignVolunteerForRequest: assignVolunteerForRequest
+};

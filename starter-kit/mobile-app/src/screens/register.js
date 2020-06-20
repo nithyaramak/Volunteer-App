@@ -89,7 +89,7 @@ const Register = function({navigation}) {
     password:'',
     contact: '',
     userType: 'Volunteer',
-    type: 'Food',
+    causeType: 'Food/Water',
     email: 'abc@startv.com',
     description: 'adbc',
     city: '',
