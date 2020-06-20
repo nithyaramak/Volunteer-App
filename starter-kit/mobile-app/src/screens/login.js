@@ -43,17 +43,18 @@ const styles = StyleSheet.create({
   }
 });
 
-const Login = function({navigation}) {
+const Login = ({navigation, setUser}) => {
   const clearItem = {
     contact: '',
     password: ''
     };
   const [item, setItem] = React.useState(clearItem);
-  const [user, setUser] = React.useState({});
-  React.useEffect(() => {
+
+   React.useEffect(() => {
     setItem({...clearItem});
   }, []);
 
+console.log(navigation, setUser,"setUser");
   const sendItem = async () => {
     const payload = {
       ...item,
@@ -63,8 +64,8 @@ const Login = function({navigation}) {
       .then((res) => {
         Alert.alert('Success', 'Login Successful.', [{text: 'OK'}]);
         setItem({...clearItem});
+        setUser(payload.name)
         AsyncStorage.setItem('user', JSON.stringify(res.result)).then(()=> navigation.navigate('Home'));
-
       })
       .catch(err => {
         console.log(err,"err----");
@@ -103,12 +104,13 @@ const Login = function({navigation}) {
       <TouchableOpacity onPress={sendItem}>
         <Text style={styles.button}>Login</Text>
       </TouchableOpacity>
+      
        <TouchableOpacity
          style={styles.itemTouchable}
          onPress={() => {
            navigation.navigate('User Registration');
          }}>
-          <Text style={styles.button}>Sign Up</Text>
+          <Text style={styles.button} >Sign Up</Text>
         </TouchableOpacity>
     </ScrollView>
   );

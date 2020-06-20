@@ -7,7 +7,6 @@ import {
   ImageBackground,
 } from 'react-native';
 import {ScrollView} from 'react-native-gesture-handler';
-import {getToken} from '../lib/utils';
 
 const styles = StyleSheet.create({
   center: {
@@ -62,8 +61,6 @@ const styles = StyleSheet.create({
 });
 
 const Home = ({navigation}) => {
-  const [user, setUser] = React.useState(''),
-    value = getToken().then(value => setUser(value ? value.name : ''));
 
   return (
     <View style={styles.center}>
@@ -71,7 +68,7 @@ const Home = ({navigation}) => {
         style={styles.backgroundImage}
         source={require('../images/GettyImages-1188864563Yevhenii-Dubinko.jpg')}>
         <ScrollView style={styles.scroll}>
-          <Text style={styles.title}>Guardian Angels {user}</Text>
+          <Text style={styles.title}>Guardian Angels</Text>
           <Text style={styles.content}>
             There is a great deal of satisfaction that comes from making a
             difference to people in your local community. There is a growing
