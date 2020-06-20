@@ -1,128 +1,172 @@
 import 'react-native-gesture-handler';
 import * as React from 'react';
 
-import { Button } from 'react-native';
+import {Button, AsyncStorage} from 'react-native';
 
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import {NavigationContainer} from '@react-navigation/native';
+import {createStackNavigator} from '@react-navigation/stack';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 
 import LoadingScreen from './src/screens/loading';
 import Home from './src/screens/home';
 import Chat from './src/screens/chat';
 import SearchResources from './src/screens/resources-search';
-import AddResource from './src/screens/resource-add';
-import EditResource from './src/screens/resource-edit';
-import MyResources from './src/screens/resources-my';
 import Map from './src/screens/map';
-import Login from './src/screens/login'
-import Register from './src/screens/register'
+import Login from './src/screens/login';
+import Register from './src/screens/register';
+import Account from './src/screens/user-account';
 import EventRegistration from './src/screens/event-registration';
-import { HomeIcon, ChatIcon, SearchIcon, LoginIcon, RegisterIcon } from './src/images/svg-icons';
+import {
+  HomeIcon,
+  SearchIcon,
+  LoginIcon,
+  RegisterIcon,
+} from './src/images/svg-icons';
 
+import {logout, getToken} from './src/lib/utils';
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
-const ResourcesStackOptions = ({ navigation }) => {
-  return ({
+const logoutUser = navigation => {
+  console.log('logout');
+  getToken().then(user =>
+    user &&
+    logout(user._id).then(() => {
+      AsyncStorage.removeItem('user').then(() => navigation.navigate('Login'));
+    }),
+  );
+};
+
+const ResourcesStackOptions = ({navigation}) => {
+  return {
     headerRight: () => (
       <Button
-        color='#ff8c00'
+        color="#ff8c00"
         onPress={() => navigation.navigate('Chat')}
-        title='Chat '
+        title="Chat"
       />
-    )
-  });
+    ),
+  };
+};
+
+const AccountStackOptions = ({navigation}) => {
+  return {
+    headerRight: () => (
+      <Button
+        color="#ff8c00"
+        onPress={() => logoutUser(navigation)}
+        title="Logout"
+      />
+    ),
+  };
+};
+
+const welcomeMessage = () => {
+  return {
+    headerRight: () => <Text color="#ff8c00">Welcome</Text>,
+  };
 };
 
 const tabBarOptions = {
-  // showLabel: false,
   activeTintColor: '#ff7700',
   inactiveTintColor: '#000',
   style: {
     backgroundColor: '#F1F0EE',
-    paddingTop: 5
-  }
+    paddingTop: 5,
+  },
 };
 
-const TabLayout = () => (
+const TabLayout = props => (
   <Tab.Navigator
     style={{paddingTop: 50}}
-    initialRouteName='Home'
-    tabBarOptions={tabBarOptions} >
+    initialRouteName="Home"
+    tabBarOptions={tabBarOptions}>
     <Tab.Screen
-      name='Home'
+      name="Home"
       component={Home}
       options={{
-        tabBarIcon: ({color}) => (<HomeIcon fill={color}/>)
-      }}
-    />
-    <Tab.Screen
-      name='Login'
-      component={LoginStackLayout}
-      options={{
-        tabBarIcon: ({color}) => (<LoginIcon fill={color} />)
+        tabBarIcon: ({color}) => <HomeIcon fill={color} />,
       }}
     />
 
-   <Tab.Screen
-      name='Register Event'
-      component={EventRegisterStackLayout}
-      options={{
-        tabBarIcon: ({color}) => (<RegisterIcon fill={color} />)
-      }}
-    /> 
- 
     <Tab.Screen
-      name='Search'
+      name="Search"
       component={SearchStackLayout}
       options={{
-        tabBarIcon: ({color}) => (<SearchIcon fill={color} />)
+        tabBarIcon: ({color}) => <SearchIcon fill={color} />,
       }}
     />
-     {/* <Tab.Screen
-      name='Chat'
-      component={ChatStackLayout}
+ {props.showEventTab ? (
+   <React.Fragment>
+    <Tab.Screen
+      name="Register Event"
+      component={EventRegisterStackLayout}
       options={{
-        tabBarIcon: ({color}) => (<ChatIcon fill={color} />)
+        tabBarIcon: ({color}) => <RegisterIcon fill={color} />,
       }}
-    /> */}
+    />
+    <Tab.Screen
+    name="Account"
+    component={AccountStackLayout}
+    options={{
+      tabBarIcon: ({color}) => <LoginIcon fill={color} />,
+    }}
+  /></React.Fragment>
+ ) : 
+   
+    <Tab.Screen
+      name="Login"
+      component={LoginStackLayout}
+      options={{
+        tabBarIcon: ({color}) => <LoginIcon fill={color} />,
+      }}
+    />}
+
+
   </Tab.Navigator>
 );
 
 const SearchStackLayout = () => (
   <Stack.Navigator>
-    <Stack.Screen name='Search Resources' component={SearchResources} options={ResourcesStackOptions} />
-    <Stack.Screen name='Chat' component={Chat} />
-    <Stack.Screen name='Map' component={Map} />
+    <Stack.Screen
+      name="Search Resources"
+      component={SearchResources}
+      options={ResourcesStackOptions}
+    />
+    <Stack.Screen name="Chat" component={Chat} />
+    <Stack.Screen name="Map" component={Map} />
   </Stack.Navigator>
 );
 
 const LoginStackLayout = () => (
   <Stack.Navigator>
-    <Stack.Screen name='Login' component={Login}  />
-    <Stack.Screen name='Home' component={Home} />
-    <Stack.Screen name='User Registration' component={Register} />
+    <Stack.Screen name="Login" component={Login} />
+    <Stack.Screen name="User Registration" component={Register} />
+  </Stack.Navigator>
+);
+
+const AccountStackLayout = () => (
+  <Stack.Navigator>
+    <Stack.Screen
+      name="Account"
+      component={Account}
+      options={AccountStackOptions}
+    />
+     <Stack.Screen name="Login" component={Login} />
   </Stack.Navigator>
 );
 
 const EventRegisterStackLayout = () => (
   <Stack.Navigator>
-    <Stack.Screen name='Event Registration' component={EventRegistration}  />
+    <Stack.Screen name="Event Registration" component={EventRegistration} />
   </Stack.Navigator>
 );
 
-// const ChatStackLayout = () => (
-//   <Stack.Navigator>
-//       <Stack.Screen name='Chat' component={Chat} />
-//   </Stack.Navigator>
-// );
-
-
 const App = () => {
-  const [isLoading, setIsLoading] = React.useState(true);
-
-
+  const [isLoading, setIsLoading] = React.useState(true),
+    [user, setUser] = React.useState(''),
+    value = getToken().then(value => setUser(value && value.name));
+console.log(user)
   React.useEffect(() => {
     setTimeout(() => {
       setIsLoading(false);
@@ -130,11 +174,11 @@ const App = () => {
   }, []);
 
   if (isLoading) {
-    return (<LoadingScreen />);
+    return <LoadingScreen />;
   } else {
     return (
       <NavigationContainer>
-        <TabLayout/>
+        <TabLayout showEventTab={user}/>
       </NavigationContainer>
     );
   }

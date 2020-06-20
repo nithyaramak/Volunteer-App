@@ -78,7 +78,7 @@ const Login = function({navigation}) {
 
   return (
     <ScrollView style={styles.outerView}>
-      <Text style={styles.label}>Contact</Text>
+      <Text style={styles.label}>Mobile Number</Text>
       <TextInput
         style={styles.textInput}
         value={item.contact}
@@ -86,7 +86,7 @@ const Login = function({navigation}) {
         onSubmitEditing={sendItem}
         returnKeyType="send"
         enablesReturnKeyAutomatically={true}
-        placeholder="contact"
+        placeholder="Mobile number"
         blurOnSubmit={false}
       />
       <Text style={styles.label}>Password</Text>

@@ -54,7 +54,6 @@ export const apiCall = (item, url) => {
     },
     body: JSON.stringify(item),
   }).then(response => {
-    // console.log(response);
     if (!response.ok) {
       throw new Error(
         response.statusText || response.message || response.status,
@@ -130,8 +129,8 @@ export const message = payload => {
   });
 };
 
-export const logout = () => {
-  return fetch(`${serverUrl}/logout`, {
+export const logout = (userId) => {
+  return fetch(`${serverUrl}/logout/${userId}`, {
     method: 'DELETE',
     mode: 'no-cors',
     cache: 'no-cache',

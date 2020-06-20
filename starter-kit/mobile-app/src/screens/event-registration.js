@@ -9,10 +9,8 @@ import {
 } from 'react-native';
 import {ScrollView} from 'react-native-gesture-handler';
 import PickerSelect from 'react-native-picker-select';
-import {CheckedIcon, UncheckedIcon} from '../images/svg-icons';
-import Geolocation from '@react-native-community/geolocation';
 
-import {apiCall, userID} from '../lib/utils';
+import {apiCall} from '../lib/utils';
 
 const styles = StyleSheet.create({
   outerView: {
@@ -121,20 +119,6 @@ const EventRegistration = function({navigation}) {
     return true;
   };
 
-  //  React.useEffect(() => {
-  //    navigation.addListener('focus', () => {
-  //      Geolocation.getCurrentPosition(pos => {
-  //        setPosition(pos);
-  //        if (useLocation) {
-  //          setItem({
-  //            ...item,
-  //            location: `${pos.coords.latitude},${pos.coords.longitude}`,
-  //          });
-  //        }
-  //      });
-  //    });
-  //  }, []);
-
   const sendItem = () => {
     const payload = {
       ...item,
@@ -161,17 +145,6 @@ const EventRegistration = function({navigation}) {
 
   return (
     <ScrollView style={styles.outerView}>
-      {/* <Text style={styles.label}>Created By</Text>
-      <TextInput
-        style={styles.textInput}
-        value={item.owner}
-        onChangeText={t => setItem({...item, owner: t})}
-        onSubmitEditing={sendItem}
-        returnKeyType="send"
-        enablesReturnKeyAutomatically={true}
-        placeholder="Event Owner name"
-        blurOnSubmit={false}
-      /> */}
 
       <Text style={styles.label}>Event Name</Text>
       <TextInput
@@ -228,7 +201,7 @@ const EventRegistration = function({navigation}) {
         blurOnSubmit={false}
         placeholder="Country"
       />
-      <Text style={styles.label}>Contact</Text>
+      <Text style={styles.label}>Mobile Number</Text>
       <TextInput
         style={styles.textInput}
         value={item.contact}
@@ -276,7 +249,7 @@ const EventRegistration = function({navigation}) {
           {label: 'Daily Essentials', value: 'Daily Essentials'},
         ]}
       />
-      {item.type !== '' &&
+      {item.causeType !== '' &&
         item.name.trim() !== '' &&
         item.contact.trim() !== '' && (
           <TouchableOpacity onPress={sendItem}>

@@ -83,8 +83,8 @@ const styles = StyleSheet.create({
 
 const Home = () => {
 
-  const [user, setUser] = React.useState("");
-  const value = getToken().then((value)=>  setUser(value.name));
+  const [user, setUser] = React.useState(""),
+    value = getToken().then((value)=>  setUser(value ? value.name: ""));
 
   return (
     <View style={styles.center}>
