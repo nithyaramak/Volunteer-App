@@ -12,6 +12,7 @@ import PickerSelect from 'react-native-picker-select';
 import { ScrollView } from 'react-native-gesture-handler';
 import {search} from '../lib/utils';
 import {Card} from 'react-native-shadow-cards';
+
 const styles = StyleSheet.create({
   outerView: {
     backgroundColor: '#FFF',
@@ -101,10 +102,12 @@ const styles = StyleSheet.create({
     alignItems: "flex-end" 
   },
 });
+
 const SearchResources = function({route, navigation}) {
   const [query, setQuery] = React.useState({type: 'Food', name: ''});
   const [items, setItems] = React.useState([]);
   const [info, setInfo] = React.useState('');
+
   const Item = props => {
     return (
       <TouchableOpacity
@@ -120,10 +123,12 @@ const SearchResources = function({route, navigation}) {
       </TouchableOpacity>
     );
   };
+
   const searchItem = () => {
     const payload = {
       ...query,
     };
+
     search(payload)
       .then(results => {
         setInfo(`${results.length} result(s)`);
@@ -153,12 +158,12 @@ const SearchResources = function({route, navigation}) {
           value={query.type}
           onValueChange={t => setQuery({...query, type: t})}
           items={[
-            {label: 'Beneficiary', value: 'beneficiary'},
             {label: 'Volunteers', value: 'volunteers'},
-            {label: 'Organization', value: 'organization'},
-            {label: 'Events', value: 'events'},
+            {label: 'Event', value: 'Event'},
+            {label: 'Organisation', value: 'Organisation'},
           ]}
         />
+
         <TouchableOpacity onPress={searchItem}>
           <Text style={styles.button}>Search</Text>
         </TouchableOpacity>
@@ -173,7 +178,7 @@ const SearchResources = function({route, navigation}) {
                 <Text style={styles.buttonJoin}>Join</Text>
               </TouchableOpacity>
               </View>
-​
+
               {Object.keys(users[key]).map((item, index) => {
                 return (
                   <Text style={styles.searchResultText}>
@@ -186,6 +191,7 @@ const SearchResources = function({route, navigation}) {
         })}
       </View>
       </ScrollView>
+
       <FlatList
         style={styles.flatListView}
         data={items}
@@ -195,4 +201,5 @@ const SearchResources = function({route, navigation}) {
     </View>
   );
 };
+
 export default SearchResources;
