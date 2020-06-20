@@ -18,7 +18,7 @@ import Map from './src/screens/map';
 import Login from './src/screens/login'
 import Register from './src/screens/register'
 import EventRegistration from './src/screens/event-registration';
-import { HomeIcon, ChatIcon, SearchIcon, LoginIcon } from './src/images/svg-icons';
+import { HomeIcon, ChatIcon, SearchIcon, LoginIcon, RegisterIcon } from './src/images/svg-icons';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -64,6 +64,14 @@ const TabLayout = () => (
         tabBarIcon: ({color}) => (<LoginIcon fill={color} />)
       }}
     />
+
+   <Tab.Screen
+      name='Register Event'
+      component={EventRegisterStackLayout}
+      options={{
+        tabBarIcon: ({color}) => (<RegisterIcon fill={color} />)
+      }}
+    /> 
  
     <Tab.Screen
       name='Search'
@@ -93,6 +101,7 @@ const SearchStackLayout = () => (
 const LoginStackLayout = () => (
   <Stack.Navigator>
     <Stack.Screen name='Login' component={Login}  />
+    <Stack.Screen name='Home' component={Home} />
     <Stack.Screen name='User Registration' component={Register} />
   </Stack.Navigator>
 );
