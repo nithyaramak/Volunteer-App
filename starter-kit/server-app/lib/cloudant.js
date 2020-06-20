@@ -543,7 +543,7 @@ function getMyEvents(headers){
   })
 }
 
-function assignVolunteerForRequest(city){
+function findVolunteerForRequest(city){
   let selector = {
     "id": "users",
     "activeRequestCount": {
@@ -581,5 +581,5 @@ module.exports = {
   joinEventOrRequest: joinEventOrRequest,
   getMyRequests: getMyRequests,
   getMyEvents: getMyEvents,
-  assignVolunteerForRequest: assignVolunteerForRequest
+  findVolunteerForRequest: findVolunteerForRequest
 };
