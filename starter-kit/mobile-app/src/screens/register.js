@@ -9,10 +9,8 @@ import {
 } from 'react-native';
 import {ScrollView} from 'react-native-gesture-handler';
 import PickerSelect from 'react-native-picker-select';
-import {CheckedIcon, UncheckedIcon, RegisterIcon} from '../images/svg-icons';
-import Geolocation from '@react-native-community/geolocation';
 
-import {apiCall, userID} from '../lib/utils';
+import {apiCall} from '../lib/utils';
 
 const styles = StyleSheet.create({
   outerView: {
@@ -86,12 +84,12 @@ const styles = StyleSheet.create({
 const Register = function({navigation}) {
   const clearItem = {
     name: '',
-    password:'',
+    password: '',
     contact: '',
     userType: 'Volunteer',
     causeType: 'Food/Water',
-    email: 'abc@startv.com',
-    description: 'adbc',
+    email: 'nits@startv.com',
+    description: 'description',
     city: '',
     state: '',
     country: '',
@@ -106,7 +104,7 @@ const Register = function({navigation}) {
 
   const validations = payload => {
     console.log(payload.name);
-    if (payload.name.length === 0 || !payload.name.match(/[A-Za-z]/ig)) {
+    if (payload.name.length === 0 || !payload.name.match(/[A-Za-z]/gi)) {
       Alert.alert('Please enter valid name');
       return false;
     }
@@ -130,12 +128,18 @@ const Register = function({navigation}) {
   };
   const sendItem = () => {
     const payload = {
-      ...item,
-    }, url = `signup`
+        ...item,
+      },
+      url = `signup`;
     if (validations(payload)) {
       apiCall(payload, url)
         .then(() => {
-          Alert.alert('Thank you!', 'Registration Successful.', [{text: 'OK'}]);
+          navigation.navigate('Login');
+          Alert.alert(
+            'Thank you!',
+            'Registration Successful. Please Login to proceed',
+            [{text: 'OK'}],
+          );
           setItem({...clearItem});
         })
         .catch(err => {
@@ -156,22 +160,22 @@ const Register = function({navigation}) {
         style={{inputIOS: styles.selector}}
         value={item.userType}
         onValueChange={t => setItem({...item, userType: t})}
+        disabled
         items={[
           {label: 'Volunteer', value: 'Volunteer'},
           {label: 'Beneficiary', value: 'Beneficiary'},
           {label: 'Organization', value: 'Organization'},
         ]}
       />
-      <Text style={styles.label}>Cause / Needs</Text>
+      <Text style={styles.label}>Cause</Text>
       <PickerSelect
         style={{inputIOS: styles.selector}}
-        value={item.type}
-        onValueChange={t => setItem({...item, type: t})}
+        value={item.causeType}
+        onValueChange={t => setItem({...item, causeType: t})}
         items={[
-          {label: 'Food', value: 'Food'},
+          {label: 'Food/Water', value: 'Food/Water'},
           {label: 'Medicine', value: 'Medicine'},
           {label: 'Shelter', value: 'Shelter'},
-          {label: 'Food/Water', value: 'Food/Water'},
           {label: 'Educational Help', value: 'Educational Help'},
           {label: 'Daily Essentials', value: 'Daily Essentials'},
         ]}
@@ -187,7 +191,7 @@ const Register = function({navigation}) {
         placeholder="Name"
         blurOnSubmit={false}
       />
-        <Text style={styles.label}>Password</Text>
+      <Text style={styles.label}>Password</Text>
       <TextInput
         style={styles.textInput}
         value={item.password}
@@ -199,7 +203,7 @@ const Register = function({navigation}) {
         placeholder="Password"
         blurOnSubmit={false}
       />
-      <Text style={styles.label}>Contact</Text>
+      <Text style={styles.label}>Mobile Number</Text>
       <TextInput
         style={styles.textInput}
         value={item.contact}
@@ -251,7 +255,7 @@ const Register = function({navigation}) {
         placeholder="PAN ID"
       />
 
-      {item.type !== '' &&
+      {item.causeType !== '' &&
         item.name.trim() !== '' &&
         item.contact.trim() !== '' && (
           <TouchableOpacity onPress={sendItem}>
