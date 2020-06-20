@@ -142,11 +142,9 @@ const App = () => {
 
   const SearchStackLayout = () => (
     <Stack.Navigator>
-      <Stack.Screen
-        name="Search Resources"
-        component={SearchResources}
-        options={ResourcesStackOptions}
-      />
+      <Stack.Screen name="Search Resources" options={ResourcesStackOptions}>
+        {navigation => <SearchResources user={user} navigation={navigation} />}
+      </Stack.Screen>
       <Stack.Screen name="Chat" component={Chat} />
       <Stack.Screen name="Map" component={Map} />
     </Stack.Navigator>
@@ -154,12 +152,9 @@ const App = () => {
 
   const LoginStackLayout = () => (
     <Stack.Navigator>
-      <Stack.Screen
-        name="Login"
-        component={navigation => (
-          <Login setUser={setUser} navigation={navigation} />
-        )}
-      />
+      <Stack.Screen name="Login">
+        {navigation => <Login setUser={setUser} navigation={navigation} />}
+      </Stack.Screen>
       <Stack.Screen name="User Registration" component={Register} />
     </Stack.Navigator>
   );

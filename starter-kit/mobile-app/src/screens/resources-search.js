@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {Fragment} from 'react';
 import {
   StyleSheet,
   Text,
@@ -9,8 +9,8 @@ import {
   Alert,
 } from 'react-native';
 import PickerSelect from 'react-native-picker-select';
-import { ScrollView } from 'react-native-gesture-handler';
-import {search} from '../lib/utils';
+import {ScrollView} from 'react-native-gesture-handler';
+import {search, patchCall} from '../lib/utils';
 import {Card} from 'react-native-shadow-cards';
 
 const styles = StyleSheet.create({
@@ -96,59 +96,78 @@ const styles = StyleSheet.create({
     paddingTop: 5,
     width: 70,
     height: 30,
-    borderRadius: 4
+    borderRadius: 4,
   },
   joinView: {
-    alignItems: "flex-end" 
+    alignItems: 'flex-end',
   },
 });
 
-const SearchResources = function({route, navigation}) {
-  const [query, setQuery] = React.useState({type: 'Food', name: ''});
+const SearchResources = function({navigation, user}) {
+  const [query, setQuery] = React.useState({type: 'events', filter: 'active'});
   const [items, setItems] = React.useState([]);
-  const [info, setInfo] = React.useState('');
-
-  const Item = props => {
-    return (
-      <TouchableOpacity
-        style={styles.itemTouchable}
-        onPress={() => {
-          navigation.navigate('Map', {item: props});
-        }}>
-        <View style={styles.itemView}>
-          <Text style={styles.itemName}>{props.name}</Text>
-          <Text style={styles.itemQuantity}> ( {props.quantity} ) </Text>
-        </View>
-        <Text style={styles.itemDescription}>{props.description}</Text>
-      </TouchableOpacity>
-    );
-  };
-
-  const searchItem = () => {
-    const payload = {
-      ...query,
-    };
-
-    search(payload)
-      .then(results => {
-        setInfo(`${results.length} result(s)`);
-        setItems(results);
-      })
-      .catch(err => {
-        console.log(err);
-        Alert.alert(
-          'ERROR',
-          'Please try again. If the problem persists contact an administrator.',
-          [{text: 'OK'}],
-        );
+  const [info, setInfo] = React.useState(''),
+    joinEvent = item => {
+      const url = `api/event/join/${item._id}`;
+      patchCall(item, url).then(() => {
+        Alert.alert('Thank you!', 'Event Joined Successfully', [{text: 'OK'}]);
       });
-  };
-  const users = [
-    {Name: 'Mayuri', Address: 'Mumbai', Contact: '12349585849', Vacancy: "Yes"},
-    {Name: 'Ankita', Address: 'Mumbai', Contact: '12349585849', Vacancy: "No"},
-    {Name: 'Mayuri', Address: 'Mumbai', Contact: '12349585849', Vacancy: "Yes"},
-    {Name: 'Ankita', Address: 'Mumbai', Contact: '12349585849', Vacancy: "No"}
-  ];
+    },
+    updateEvent = item => {
+      navigation.navigate('Event Registration');
+    },
+    closeEvent = item => {},
+    getVacancy = item =>
+      item.volunteerRequired - (item.volunteers ? item.volunteers.length : 0),
+    getActionButtons = item => {
+      return (
+        <Fragment>
+          {item.createdBy &&
+          item.createdBy._id !== user._id &&
+          getVacancy(item) ? (
+            <View style={styles.joinView}>
+              <TouchableOpacity onPress={() => joinEvent(item)}>
+                <Text style={styles.buttonJoin}>Join</Text>
+              </TouchableOpacity>
+            </View>
+          ) : null}
+          {item.createdBy && item.createdBy._id === user._id && (
+            <Fragment>
+              <View style={styles.joinView}>
+                <TouchableOpacity onPress={() => updateEvent(item)}>
+                  <Text style={styles.buttonJoin}>Update</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.joinView}>
+                <TouchableOpacity onPress={() => closeEvent(item)}>
+                  <Text style={styles.buttonJoin}>Close</Text>
+                </TouchableOpacity>
+              </View>
+            </Fragment>
+          )}
+        </Fragment>
+      );
+    },
+    searchItem = () => {
+      const payload = {
+        ...query,
+      };
+
+      search(payload)
+        .then(results => {
+          setInfo(`${results.result.length} result(s)`);
+          setItems(results.result);
+          console.log(results.result[0].createdBy, 'zzzzzzz');
+        })
+        .catch(err => {
+          console.log(err);
+          Alert.alert(
+            'ERROR',
+            'Please try again. If the problem persists contact an administrator.',
+            [{text: 'OK'}],
+          );
+        });
+    };
   return (
     <View style={styles.outerView}>
       <View style={styles.inputsView}>
@@ -158,9 +177,18 @@ const SearchResources = function({route, navigation}) {
           value={query.type}
           onValueChange={t => setQuery({...query, type: t})}
           items={[
-            {label: 'Volunteers', value: 'volunteers'},
-            {label: 'Event', value: 'Event'},
-            {label: 'Organisation', value: 'Organisation'},
+            {label: 'Events', value: 'events'},
+            {label: 'Requests', value: 'requests'},
+          ]}
+        />
+        <Text style={styles.label}>Filter</Text>
+        <PickerSelect
+          style={{inputIOS: styles.selector}}
+          value={query.filter}
+          onValueChange={t => setQuery({...query, filter: t})}
+          items={[
+            {label: 'Active', value: 'active'},
+            {label: 'All', value: 'all'},
           ]}
         />
 
@@ -169,35 +197,44 @@ const SearchResources = function({route, navigation}) {
         </TouchableOpacity>
       </View>
       <ScrollView style={styles.outerView}>
-      <View style={styles.container}>
-        {Object.keys(users).map((key, i) => {
-          return (
-            <Card key={i} style={{padding: 10, margin: 10}}>
-              <View style={styles.joinView}>
-              <TouchableOpacity>
-                <Text style={styles.buttonJoin}>Join</Text>
-              </TouchableOpacity>
-              </View>
-
-              {Object.keys(users[key]).map((item, index) => {
-                return (
+        <Text style={styles.searchResultText}>{info}</Text>
+        <View style={styles.container}>
+          {items.map((item, index) => {
+            return (
+              <Card key={index} style={{padding: 10, margin: 10}}>
+                {query.type === 'events' && getActionButtons(item)}
+                <Text style={styles.searchResultText}>
+                  {`${query.type === 'events' ? 'Event Name' : 'Name'}`} :
+                  {item.name}
+                </Text>
+                {query.type === 'events' && (
                   <Text style={styles.searchResultText}>
-                    {item} : {users[key][item]}
+                    Event Owner : {item.createdBy && item.createdBy.name}
                   </Text>
-                );
-              })}
-            </Card>
-          );
-        })}
-      </View>
+                )}
+                <Text style={styles.searchResultText}>
+                  Mobile Number : {item.contact}
+                </Text>
+                {item.address && (
+                  <Fragment>
+                    <Text style={styles.searchResultText}>
+                      City : {item.address.city}
+                    </Text>
+                  </Fragment>
+                )}
+                {query.type === 'events' && (
+                  <Text style={styles.searchResultText}>
+                    Vacancy : {getVacancy(item)}
+                  </Text>
+                )}
+                <Text style={styles.searchResultText}>
+                  Cause/Need : {item.causeType}
+                </Text>
+              </Card>
+            );
+          })}
+        </View>
       </ScrollView>
-
-      <FlatList
-        style={styles.flatListView}
-        data={items}
-        renderItem={({item}) => <Item {...item} />}
-        keyExtractor={item => item.id || item['_id']}
-      />
     </View>
   );
 };

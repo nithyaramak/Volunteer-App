@@ -19,12 +19,9 @@ export const getToken = () => {
   return value;
 };
 
-export const search = query => {
-  const type = query.type ? `type=${query.type}` : ''
-  const name = query.name ? `name=${query.name}` : ''
-  const userID = query.userID ? `userID=${query.userID}` : ''
+export const search = (payload) => {
 
-  return fetch(`${serverUrl}/api/resource?${name}&${type}&${userID}`, {
+  return fetch(`${serverUrl}/api/${payload.type}`, {
     method: 'GET',
     mode: 'no-cors',
     cache: 'no-cache',
@@ -143,6 +140,27 @@ export const logout = (userId) => {
         throw new Error('Item not found');
       } else {
         throw new Error('Please try again. If the problem persists contact an administrator.');
+      }
+    }
+  });
+};
+
+export const patchCall = (item, url) => {
+  return fetch(`${serverUrl}/${url}`, {
+    method: 'PATCH',
+    mode: 'no-cors',
+    cache: 'no-cache',
+    headers: {
+      'Content-Type': 'application/json',
+    }
+  }).then(response => {
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error('Item not found');
+      } else {
+        throw new Error(
+          'Please try again. If the problem persists contact an administrator.',
+        );
       }
     }
   });
