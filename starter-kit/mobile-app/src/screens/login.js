@@ -5,6 +5,7 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
+  AsyncStorage
 } from 'react-native';
 import {ScrollView} from 'react-native-gesture-handler';
 
@@ -48,20 +49,22 @@ const Login = function({navigation}) {
     password: ''
     };
   const [item, setItem] = React.useState(clearItem);
-
+  const [user, setUser] = React.useState({});
   React.useEffect(() => {
     setItem({...clearItem});
   }, []);
 
-  const sendItem = () => {
+  const sendItem = async () => {
     const payload = {
       ...item,
     }, url = `login`
 
-    apiCall(payload, url)
-      .then(() => {
+     await apiCall(payload, url)
+      .then((res) => {
         Alert.alert('Success', 'Login Successful.', [{text: 'OK'}]);
         setItem({...clearItem});
+        AsyncStorage.setItem('user', JSON.stringify(res.result)).then(()=> navigation.navigate('Home'));
+
       })
       .catch(err => {
         console.log(err,"err----");
