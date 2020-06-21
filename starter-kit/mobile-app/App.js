@@ -28,7 +28,8 @@ import {logout, getToken} from './src/lib/utils';
 const App = () => {
   const [isLoading, setIsLoading] = React.useState(true),
     [user, setUser] = React.useState(''),
-    value = getToken().then(value => setUser(value && value.name));
+    [userID, setUserID] = React.useState(''),
+    value = getToken().then(value => {setUser(value && value.name); setUserID(value && value._id)});
 
   React.useEffect(() => {
     setTimeout(() => {
@@ -143,7 +144,7 @@ const App = () => {
   const SearchStackLayout = () => (
     <Stack.Navigator>
       <Stack.Screen name="Search Resources" options={ResourcesStackOptions}>
-        {navigation => <SearchResources user={user} navigation={navigation} />}
+        {props => <SearchResources userID={userID} navigation={props.navigation} />}
       </Stack.Screen>
       <Stack.Screen name="Chat" component={Chat} />
       <Stack.Screen name="Map" component={Map} />
@@ -153,7 +154,7 @@ const App = () => {
   const LoginStackLayout = () => (
     <Stack.Navigator>
       <Stack.Screen name="Login">
-        {navigation => <Login setUser={setUser} navigation={navigation} />}
+        {props => <Login setUser={setUser} navigation={props.navigation} />}
       </Stack.Screen>
       <Stack.Screen name="User Registration" component={Register} />
     </Stack.Navigator>

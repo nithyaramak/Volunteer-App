@@ -98,49 +98,88 @@ const styles = StyleSheet.create({
     height: 30,
     borderRadius: 4,
   },
+  buttonUpdate: {
+    backgroundColor: '#ff8c00',
+    color: '#FFFFFF',
+    fontFamily: 'IBMPlexSans-Medium',
+    fontSize: 14,
+    overflow: 'hidden',
+    textAlign: 'center',
+    paddingTop: 5,
+    width: 70,
+    height: 30,
+    borderRadius: 4,
+    marginLeft: 200,
+  },
+  buttonClose: {
+    backgroundColor: '#ff8c00',
+    color: '#FFFFFF',
+    fontFamily: 'IBMPlexSans-Medium',
+    fontSize: 14,
+    overflow: 'hidden',
+    textAlign: 'center',
+    padding: 5,
+    width: 70,
+    height: 30,
+    borderRadius: 4,
+    marginLeft: 10,
+  },
   joinView: {
     alignItems: 'flex-end',
   },
+  updateView: {
+    flexWrap: 'wrap',
+    alignItems: 'flex-end',
+    flexDirection: 'row',
+  },
 });
+const titleize = str => {
+  return str
+    .replace(/_/g, " ")
+    .replace(
+      /\w\S*/g,
+      txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+    );
+};
 
-const SearchResources = function({navigation, user}) {
+const SearchResources = function({navigation, userID}) {
+
   const [query, setQuery] = React.useState({type: 'events', filter: 'active'});
   const [items, setItems] = React.useState([]);
   const [info, setInfo] = React.useState(''),
+
     joinEvent = item => {
-      const url = `api/event/join/${item._id}`;
+      const requestType = query.type === "events" ? 'event' : 'request',
+       url = `api/${requestType}/join/${item._id}`;
+       
       patchCall(item, url).then(() => {
-        Alert.alert('Thank you!', 'Event Joined Successfully', [{text: 'OK'}]);
+        searchItem();
+        Alert.alert('Thank you!', `${titleize(requestType)} Joined Successfully`, [{text: 'OK'}]);
       });
     },
     updateEvent = item => {
-      navigation.navigate('Event Registration');
+       navigation.navigate('Event Registration');
     },
     closeEvent = item => {},
     getVacancy = item =>
       item.volunteerRequired - (item.volunteers ? item.volunteers.length : 0),
+    existingVolunteer = item => {
+      return (
+        item.volunteers &&
+        item.volunteers.filter((volunteer)=> volunteer).find(volunteer => volunteer._id === userID)
+      );
+    },
     getActionButtons = item => {
       return (
         <Fragment>
-          {item.createdBy &&
-          item.createdBy._id !== user._id &&
-          getVacancy(item) ? (
-            <View style={styles.joinView}>
-              <TouchableOpacity onPress={() => joinEvent(item)}>
-                <Text style={styles.buttonJoin}>Join</Text>
-              </TouchableOpacity>
-            </View>
-          ) : null}
-          {item.createdBy && item.createdBy._id === user._id && (
+          {item.createdBy && item.createdBy._id === userID && (
             <Fragment>
-              <View style={styles.joinView}>
+              <View style={styles.updateView}>
                 <TouchableOpacity onPress={() => updateEvent(item)}>
-                  <Text style={styles.buttonJoin}>Update</Text>
+                  <Text style={styles.buttonUpdate}>Update</Text>
                 </TouchableOpacity>
-              </View>
-              <View style={styles.joinView}>
                 <TouchableOpacity onPress={() => closeEvent(item)}>
-                  <Text style={styles.buttonJoin}>Close</Text>
+                  <Text style={styles.buttonClose}>Close</Text>
                 </TouchableOpacity>
               </View>
             </Fragment>
@@ -157,7 +196,6 @@ const SearchResources = function({navigation, user}) {
         .then(results => {
           setInfo(`${results.result.length} result(s)`);
           setItems(results.result);
-          console.log(results.result[0].createdBy, 'zzzzzzz');
         })
         .catch(err => {
           console.log(err);
@@ -168,6 +206,8 @@ const SearchResources = function({navigation, user}) {
           );
         });
     };
+  const queryTypeCheck = item =>
+    query.type === 'events' ? getVacancy(item) && item.createdBy && item.createdBy._id !== userID  : item._id === userID;
   return (
     <View style={styles.outerView}>
       <View style={styles.inputsView}>
@@ -200,8 +240,19 @@ const SearchResources = function({navigation, user}) {
         <Text style={styles.searchResultText}>{info}</Text>
         <View style={styles.container}>
           {items.map((item, index) => {
+            console.log(item, "checkkkk")
             return (
               <Card key={index} style={{padding: 10, margin: 10}}>
+                {
+                  // !existingVolunteer(item) &&
+                 queryTypeCheck(item) ? (
+                  <View style={styles.joinView}>
+                    <TouchableOpacity onPress={() => joinEvent(item)}>
+                      <Text style={styles.buttonJoin}>Join</Text>
+                    </TouchableOpacity>
+                  </View>
+                ) : null}
+
                 {query.type === 'events' && getActionButtons(item)}
                 <Text style={styles.searchResultText}>
                   {`${query.type === 'events' ? 'Event Name' : 'Name'}`} :
