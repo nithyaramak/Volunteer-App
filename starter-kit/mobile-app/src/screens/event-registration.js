@@ -132,6 +132,7 @@ const EventRegistration = function({route, navigation}) {
       if (route.params) {
         update(item, url)
           .then(() => {
+            route.params && route.params.searchItem();
             Alert.alert('Thank you', 'Event Updated Successfully!', [{text: 'OK'}]);
           })
           .catch(err => {

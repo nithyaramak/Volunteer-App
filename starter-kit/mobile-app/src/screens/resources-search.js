@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
     paddingTop: 5,
     width: 70,
     height: 30,
-    borderRadius: 4,
+    borderRadius: 4
   },
   buttonUpdate: {
     backgroundColor: '#ff8c00',
@@ -125,7 +125,9 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   joinView: {
+    flexWrap: 'wrap',
     alignItems: 'flex-end',
+    flexDirection: 'row',
   },
   updateView: {
     flexWrap: 'wrap',
@@ -135,26 +137,28 @@ const styles = StyleSheet.create({
 });
 const titleize = str => {
   return str
-    .replace(/_/g, " ")
+    .replace(/_/g, ' ')
     .replace(
       /\w\S*/g,
-      txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+      txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase(),
     );
 };
 
 const SearchResources = function({navigation, userID}) {
-
   const [query, setQuery] = React.useState({type: 'events', filter: 'active'});
   const [items, setItems] = React.useState([]);
   const [info, setInfo] = React.useState(''),
-
     joinEvent = item => {
-      const requestType = item.id === "events" ? 'event' : 'request',
-       url = `api/${requestType}/join/${item._id}`;
-       
+      const requestType = item.id === 'events' ? 'event' : 'request',
+        url = `api/${requestType}/join/${item._id}`;
+
       patchCall(item, url).then(() => {
         searchItem();
-        Alert.alert('Thank you!', `${titleize(requestType)} Joined Successfully`, [{text: 'OK'}]);
+        Alert.alert(
+          'Thank you!',
+          `${titleize(requestType)} Joined Successfully`,
+          [{text: 'OK'}],
+        );
       });
     },
     updateEvent = item => {
@@ -170,46 +174,55 @@ const SearchResources = function({navigation, userID}) {
         funds: item.funds,
         causeType: item.causeType,
       };
-       navigation.navigate('Event Registration',{payload});
+       navigation.navigate('Event Registration', {payload, searchItem});
     },
     closeEvent = item => {
-      const requestType = item.id === "events" ? 'event' : 'request',
-      url = `api/${requestType}/join/${item._id}`;
-      
-     patchCall(item, url).then(() => {
-       searchItem();
-       Alert.alert('Thank you!', `${titleize(requestType)} Closed Successfully`, [{text: 'OK'}]);
-     });
+      const requestType = item.id === 'events' ? 'event' : 'request',
+        url = `api/${requestType}/close/${item._id}`;
+
+      patchCall(item, url).then(() => {
+        searchItem();
+        Alert.alert(
+          'Thank you!',
+          `${titleize(requestType)} Closed Successfully`,
+          [{text: 'OK'}],
+        );
+      });
     },
     getVacancy = item =>
       item.volunteerRequired - (item.volunteers ? item.volunteers.length : 0),
     existingVolunteer = item => {
       return (
         item.volunteers &&
-        item.volunteers.filter((volunteer)=> volunteer).find(volunteer => volunteer._id === userID)
+        item.volunteers
+          .filter(volunteer => volunteer)
+          .find(volunteer => volunteer._id === userID)
       );
     },
-    getActionButtons = item => {
+    memberAlready = item => {
+      return item.id === 'events'
+        ? item.createdBy && item.createdBy._id !== userID
+        : true;
+    },
+    closeQueryCondition = item => {
+      return item.id === 'events'
+        ? item.createdBy && item.createdBy._id === userID
+        : item.volunteers &&
+            item.volunteers.find(volunteer => volunteer._id === userID);
+    },
+    getUpdateButton = item => {
       return (
-        <Fragment>
-          {item.createdBy && item.createdBy._id === userID && (
-            <Fragment>
-              <View style={styles.updateView}>
-                <TouchableOpacity onPress={() => updateEvent(item)}>
-                  <Text style={styles.buttonUpdate}>Update</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => closeEvent(item)}>
-                  <Text style={styles.buttonClose}>Close</Text>
-                </TouchableOpacity>
-              </View>
-            </Fragment>
-          )}
-        </Fragment>
+        item.createdBy &&
+        item.createdBy._id === userID && (
+          <TouchableOpacity onPress={() => updateEvent(item)}>
+            <Text style={styles.buttonUpdate}>Update</Text>
+          </TouchableOpacity>
+        )
       );
     },
     searchItem = () => {
       const payload = {
-        ...query
+        ...query,
       };
 
       search(payload)
@@ -227,7 +240,10 @@ const SearchResources = function({navigation, userID}) {
         });
     };
   const queryTypeCheck = item =>
-    item.id === 'events' ? getVacancy(item) && item.createdBy && item.createdBy._id !== userID  : item._id === userID;
+    item.id === 'events'
+      ? getVacancy(item) && item.createdBy && item.createdBy._id !== userID
+      : true;
+
   return (
     <View style={styles.outerView}>
       <View style={styles.inputsView}>
@@ -260,19 +276,28 @@ const SearchResources = function({navigation, userID}) {
         <Text style={styles.searchResultText}>{info}</Text>
         <View style={styles.container}>
           {items.map((item, index) => {
+            console.log(item, 'checkkkk');
             return (
               <Card key={index} style={{padding: 10, margin: 10}}>
-                {
-                  // !existingVolunteer(item) &&
-                 queryTypeCheck(item) ? (
+                {item.isActive && userID && (
                   <View style={styles.joinView}>
-                    <TouchableOpacity onPress={() => joinEvent(item)}>
-                      <Text style={styles.buttonJoin}>Join</Text>
-                    </TouchableOpacity>
+                    {queryTypeCheck(item) ? (
+                      !existingVolunteer(item) ? (
+                        <TouchableOpacity onPress={() => joinEvent(item)}>
+                          <Text style={styles.buttonJoin}>Join</Text>
+                        </TouchableOpacity>
+                      ) : memberAlready(item) ? (
+                        <Text style={styles.searchResultText}>Member</Text>
+                      ) : null
+                    ) : null}
+                    {item.id === 'events' && getUpdateButton(item)}
+                    {closeQueryCondition(item) && (
+                      <TouchableOpacity onPress={() => closeEvent(item)}>
+                        <Text style={styles.buttonClose}>Close</Text>
+                      </TouchableOpacity>
+                    )}
                   </View>
-                ) : null}
-
-                {item.id === 'events' && getActionButtons(item)}
+                )}
                 <Text style={styles.searchResultText}>
                   {`${item.id === 'events' ? 'Event Name' : 'Name'}`} :
                   {item.name}
@@ -299,6 +324,12 @@ const SearchResources = function({navigation, userID}) {
                 )}
                 <Text style={styles.searchResultText}>
                   Cause/Need : {item.causeType}
+                </Text>
+                <Text style={styles.searchResultText}>
+                  Active : {item.isActive ? "Yes" : "No"}
+                </Text>
+                <Text style={styles.searchResultText}>
+                  Volunteer Contact : {item.volunteers && item.volunteers.length && item.volunteers[0].contact || "N/A"}
                 </Text>
               </Card>
             );

@@ -148,6 +148,7 @@ const App = () => {
       </Stack.Screen>
       <Stack.Screen name="Chat" component={Chat} />
       <Stack.Screen name="Map" component={Map} />
+      <Stack.Screen name="Event Registration" component={EventRegistration} />
     </Stack.Navigator>
   );
 
