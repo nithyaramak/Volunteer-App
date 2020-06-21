@@ -142,6 +142,9 @@ function deleteById(id, rev) {
  */
 function createEvent(params, headers) {
   return new Promise((resolve, reject) => {
+    if(headers.token == null){
+      return resolve({"error": "Unauthorised, please login to continue", statusCode: 401 });
+    }
       db.find({'selector': {"token": headers.token, "id": "users"}}, (err, users) => {
         if (err) {
           reject(err)
@@ -245,6 +248,9 @@ function createRequest(params) {
  */
 function updateEvent(params, headers, body) {
     return new Promise((resolve, reject) => {
+      if(headers.token == null){
+        return resolve({"error": "Unauthorised, please login to continue", statusCode: 401 });
+      }
       db.find({'selector': {"token": headers.token, "id": "users"}}, (err, users) => {
         if (err) {
           reject(err)
@@ -389,6 +395,9 @@ function login(id, params) {
 
 function closeEventOrRequest(params){
   return new Promise((resolve, reject) => {
+    if(headers.token == null){
+      return resolve({"error": "Unauthorised, please login to continue", statusCode: 401 });
+    }
     db.get(params.id, (err, document) => {
       if(err){
         reject(err)
@@ -426,6 +435,9 @@ function closeEventOrRequest(params){
 
 function joinEventOrRequest(params, headers){
   return new Promise((resolve, reject) => {
+    if(headers.token == null){
+      return resolve({"error": "Unauthorised, please login to continue", statusCode: 401 });
+    }
     db.find({'selector': {"token": headers.token, "id": "users"}}, (err, users) => {
       if (err) {
         reject(err)
