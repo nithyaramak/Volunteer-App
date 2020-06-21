@@ -23,7 +23,7 @@ export const search = payload => {
     method: 'GET',
     mode: 'no-cors',
     cache: 'no-cache',
-    params: {isActive : payload.filter === "active"},
+    params: {isActive: payload.filter === 'active'},
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
@@ -63,25 +63,29 @@ export const apiCall = (item, url) => {
   });
 };
 
-export const update = item => {
-  return fetch(`${serverUrl}/api/resource/${item.id}`, {
-    method: 'PATCH',
-    mode: 'no-cors',
-    cache: 'no-cache',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(item),
-  }).then(response => {
-    if (!response.ok) {
-      if (response.status === 404) {
-        throw new Error('Item not found');
-      } else {
-        throw new Error(
-          'Please try again. If the problem persists contact an administrator.',
-        );
+export const update = (item, url) => {
+  return getToken().then(value => {
+    return fetch(`${serverUrl}/${url}/${item.id}`, {
+      method: 'PATCH',
+      mode: 'no-cors',
+      cache: 'no-cache',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        token: value && value.token,
+      },
+      body: JSON.stringify(item),
+    }).then(response => {
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error('Item not found');
+        } else {
+          throw new Error(
+            'Please try again. If the problem persists contact an administrator.',
+          );
+        }
       }
-    }
+    });
   });
 };
 
