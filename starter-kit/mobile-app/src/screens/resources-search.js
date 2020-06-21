@@ -149,7 +149,7 @@ const SearchResources = function({navigation, userID}) {
   const [info, setInfo] = React.useState(''),
 
     joinEvent = item => {
-      const requestType = query.type === "events" ? 'event' : 'request',
+      const requestType = item.id === "events" ? 'event' : 'request',
        url = `api/${requestType}/join/${item._id}`;
        
       patchCall(item, url).then(() => {
@@ -160,7 +160,15 @@ const SearchResources = function({navigation, userID}) {
     updateEvent = item => {
        navigation.navigate('Event Registration');
     },
-    closeEvent = item => {},
+    closeEvent = item => {
+      const requestType = item.id === "events" ? 'event' : 'request',
+      url = `api/${requestType}/join/${item._id}`;
+      
+     patchCall(item, url).then(() => {
+       searchItem();
+       Alert.alert('Thank you!', `${titleize(requestType)} Closed Successfully`, [{text: 'OK'}]);
+     });
+    },
     getVacancy = item =>
       item.volunteerRequired - (item.volunteers ? item.volunteers.length : 0),
     existingVolunteer = item => {
@@ -189,7 +197,7 @@ const SearchResources = function({navigation, userID}) {
     },
     searchItem = () => {
       const payload = {
-        ...query,
+        ...query
       };
 
       search(payload)
@@ -207,7 +215,7 @@ const SearchResources = function({navigation, userID}) {
         });
     };
   const queryTypeCheck = item =>
-    query.type === 'events' ? getVacancy(item) && item.createdBy && item.createdBy._id !== userID  : item._id === userID;
+    item.id === 'events' ? getVacancy(item) && item.createdBy && item.createdBy._id !== userID  : item._id === userID;
   return (
     <View style={styles.outerView}>
       <View style={styles.inputsView}>
@@ -253,12 +261,12 @@ const SearchResources = function({navigation, userID}) {
                   </View>
                 ) : null}
 
-                {query.type === 'events' && getActionButtons(item)}
+                {item.id === 'events' && getActionButtons(item)}
                 <Text style={styles.searchResultText}>
-                  {`${query.type === 'events' ? 'Event Name' : 'Name'}`} :
+                  {`${item.id === 'events' ? 'Event Name' : 'Name'}`} :
                   {item.name}
                 </Text>
-                {query.type === 'events' && (
+                {item.id === 'events' && (
                   <Text style={styles.searchResultText}>
                     Event Owner : {item.createdBy && item.createdBy.name}
                   </Text>
@@ -273,7 +281,7 @@ const SearchResources = function({navigation, userID}) {
                     </Text>
                   </Fragment>
                 )}
-                {query.type === 'events' && (
+                {item.id === 'events' && (
                   <Text style={styles.searchResultText}>
                     Vacancy : {getVacancy(item)}
                   </Text>

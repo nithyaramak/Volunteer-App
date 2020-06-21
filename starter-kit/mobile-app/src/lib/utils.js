@@ -23,6 +23,7 @@ export const search = payload => {
     method: 'GET',
     mode: 'no-cors',
     cache: 'no-cache',
+    params: {isActive : payload.filter === "active"},
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
