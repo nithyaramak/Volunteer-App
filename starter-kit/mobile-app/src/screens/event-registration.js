@@ -10,7 +10,7 @@ import {
 import {ScrollView} from 'react-native-gesture-handler';
 import PickerSelect from 'react-native-picker-select';
 
-import {apiCall} from '../lib/utils';
+import {apiCall, update} from '../lib/utils';
 
 const styles = StyleSheet.create({
   outerView: {
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const EventRegistration = function({navigation}) {
+const EventRegistration = function({route, navigation}) {
   const clearItem = {
     name: '',
     description: '',
@@ -89,17 +89,15 @@ const EventRegistration = function({navigation}) {
     city: '',
     state: '',
     country: '',
-    volunteerRequired: '1',
+    volunteerRequired: 1,
     funds: '',
-    causeType: 'Food/Water'
-    };
-
+    causeType: 'Food/Water',
+  };
   const [item, setItem] = React.useState(clearItem);
   const [useLocation, setUseLocation] = React.useState(true);
   const [position, setPosition] = React.useState({});
 
   const validations = payload => {
-    console.log(payload.name);
     if (payload.name.length === 0) {
       Alert.alert('Please enter valid event name');
       return false;
@@ -118,34 +116,53 @@ const EventRegistration = function({navigation}) {
     }
     return true;
   };
+  React.useEffect(() => {
+    if (route.params && route.params.payload) {
+      setItem(route.params.payload);
+    }
+  }, [route.params]);
+
 
   const sendItem = () => {
     const payload = {
-      ...item,
-      quantity: isNaN(item.quantity) ? 1 : parseInt(item.quantity),
-    }, url =`api/event`
+        ...item,
+      },
+      url = `api/event`;
     if (validations(payload)) {
-      apiCall(payload, url)
-        .then(() => {
-          Alert.alert('Thank you', 'Event Registered!', [
-            {text: 'OK'},
-          ]);
-          setItem({...clearItem});
-        })
-        .catch(err => {
-          console.log(err, 'error');
-          Alert.alert(
-            'ERROR',
-            'Please try again. If the problem persists contact an administrator.',
-            [{text: 'OK'}],
-          );
-        });
+      if (route.params) {
+        update(item, url)
+          .then(() => {
+            Alert.alert('Thank you', 'Event Updated Successfully!', [{text: 'OK'}]);
+          })
+          .catch(err => {
+            console.log(err, 'error');
+            Alert.alert(
+              'ERROR',
+              'Please try again. If the problem persists contact an administrator.',
+              [{text: 'OK'}],
+            );
+          });
+      } else {
+        apiCall(payload, url)
+          .then(() => {
+            Alert.alert('Thank you', 'Event Registered!', [{text: 'OK'}]);
+            setItem({...clearItem});
+          })
+          .catch(err => {
+            console.log(err, 'error');
+            Alert.alert(
+              'ERROR',
+              'Please try again. If the problem persists contact an administrator.',
+              [{text: 'OK'}],
+            );
+          });
+      }
     }
   };
 
+  
   return (
     <ScrollView style={styles.outerView}>
-
       <Text style={styles.label}>Event Name</Text>
       <TextInput
         style={styles.textInput}
@@ -253,7 +270,9 @@ const EventRegistration = function({navigation}) {
         item.name.trim() !== '' &&
         item.contact.trim() !== '' && (
           <TouchableOpacity onPress={sendItem}>
-            <Text style={styles.button}>Register</Text>
+            <Text style={styles.button}>
+              {route.params ? 'Update Event' : 'Register'}
+            </Text>
           </TouchableOpacity>
         )}
     </ScrollView>

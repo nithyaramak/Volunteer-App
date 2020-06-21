@@ -158,7 +158,19 @@ const SearchResources = function({navigation, userID}) {
       });
     },
     updateEvent = item => {
-       navigation.navigate('Event Registration');
+      const payload = {
+        id: item._id,
+        name: item.name,
+        description: item.description,
+        contact: item.contact,
+        city: item.address.city,
+        state: item.address.state,
+        country: item.address.country,
+        volunteerRequired: item.volunteerRequired,
+        funds: item.funds,
+        causeType: item.causeType,
+      };
+       navigation.navigate('Event Registration',{payload});
     },
     closeEvent = item => {
       const requestType = item.id === "events" ? 'event' : 'request',
@@ -248,7 +260,6 @@ const SearchResources = function({navigation, userID}) {
         <Text style={styles.searchResultText}>{info}</Text>
         <View style={styles.container}>
           {items.map((item, index) => {
-            console.log(item, "checkkkk")
             return (
               <Card key={index} style={{padding: 10, margin: 10}}>
                 {

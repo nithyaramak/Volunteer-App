@@ -211,17 +211,40 @@ function createUser(params, headers) {
 function createRequest(params) {
   return new Promise((resolve, reject) => {
     let id = uuidv4();
+    let item = null;
     findVolunteerForRequest(params.city)
       .then(data => {
         let volunteer = data.data;
         params['volunteers'] = volunteer;
-        let item = helper.constructRequestObject(id, params)
+        item = helper.constructRequestObject(id, params)
         db.insert(item, (err, result) => {
           if (err) {
             console.log('Error occurred: ' + err.message, 'create()');
             reject(err);
           } else {
-            resolve({result: item, statusCode: 201 });
+            if(volunteer.length > 0){
+              let user = volunteer[0]
+              updateRequestCount(user, user.activeRequestCount+1, user.totalRequestCount+1).then(data => {
+                if(data.statusCode == 200){
+                  return resolve({"result": item, statusCode: 201 });
+                }else{
+                  //Reverting request volunteer assignment since user update failed
+                  item["volunteers"] = []
+                  item["_id"] = result._id
+                  item["_rev"] = result._rev
+                  db.insert(item, (err, result) => {
+                    if (err) {
+                        console.log('Error occurred: ' + err.message, 'create()');
+                        reject(err);
+                    } else {
+                        return resolve({"error": "Server is busy. Try Again later", statusCode: 401 });
+                    }
+                  })
+                }
+              })
+            }else{
+              return resolve({"result": item, statusCode: 201 });
+            }
           }
         });
       });
@@ -334,6 +357,8 @@ function logout(id, params) {
                   contact: document.contact,
                   pan: document.pan,
                   password: document.password,
+                  activeRequestCount: document.activeRequestCount,
+                  totalRequestCount: document.totalRequestCount,
                   whenCreated: document.whenCreated,
                   whenUpdated: Date.now()     
               }
@@ -374,6 +399,8 @@ function login(id, params) {
                   contact: document.contact,
                   pan: document.pan,
                   password: document.password,
+                  activeRequestCount: document.activeRequestCount,
+                  totalRequestCount: document.totalRequestCount,
                   whenCreated: document.whenCreated,
                   whenUpdated: Date.now()     
                 }
@@ -393,42 +420,71 @@ function login(id, params) {
   });
 }
 
-function closeEventOrRequest(params){
+function closeEventOrRequest(params, headers){
   return new Promise((resolve, reject) => {
     if(headers.token == null){
       return resolve({"error": "Unauthorised, please login to continue", statusCode: 401 });
     }
-    db.get(params.id, (err, document) => {
-      if(err){
+    db.find({'selector': {"token": headers.token, "id": "users"}}, (err, users) => {
+      if (err) {
         reject(err)
-      }else{
-        let item = {
-          _id: document._id,
-          _rev: document._rev, // Specifiying the _rev turns this into an update
-          id: document.id,
-          name: document.name,
-          description: document.description,
-          address: document.address,
-          causeType: document.causeType,
-          contact: document.contact,
-          volunteers: document.volunteers,
-          isActive: false,
-          volunteerRequired: document.volunteerRequired,
-          volunteerPresent: document.volunteerPresent,
-          funds: document.funds,
-          createdBy: document.createdBy,
-          whenCreated: document.whenCreated,
-          whenUpdated: Date.now()     
+      } else {
+        let user = users.docs.length > 0 ? users.docs[0] : null
+        if(user != null){
+          db.get(params.id, (err, document) => {
+            if(err){
+              reject(err)
+            }else{
+              if(document.isActive != true){
+                return resolve({"error": "Already closed. Please refresh", statusCode: 400 });
+              }
+              let item = {
+                _id: document._id,
+                _rev: document._rev, // Specifiying the _rev turns this into an update
+                id: document.id,
+                name: document.name,
+                description: document.description,
+                address: document.address,
+                causeType: document.causeType,
+                contact: document.contact,
+                volunteers: document.volunteers,
+                isActive: false,
+                volunteerRequired: document.volunteerRequired,
+                volunteerPresent: document.volunteerPresent,
+                funds: document.funds,
+                createdBy: document.createdBy,
+                whenCreated: document.whenCreated,
+                whenUpdated: Date.now()     
+              }
+              db.insert(item, (err, result) => {
+                if (err) {
+                    console.log('Error occurred: ' + err.message, 'create()');
+                    reject(err);
+                } else {
+                  updateRequestCount(user, user.activeRequestCount-1, user.totalRequestCount).then(data => {
+                    if(data.statusCode == 200){
+                      return resolve({"result": item, statusCode: 200 });
+                    }else{
+                      //Reverting event update since user update failed
+                      item["isActive"] = true
+                      db.insert(item, (err, result) => {
+                        if (err) {
+                            console.log('Error occurred: ' + err.message, 'create()');
+                            reject(err);
+                        } else {
+                           return resolve({"error": "Server is busy. Try Again later", statusCode: 401 });
+                        }
+                      })
+                    }
+                  })
+                }
+              })
+            }
+          })
+        }else{
+          return resolve({"error": "Unauthorised, please login to continue", statusCode: 401 });
         }
-        db.insert(item, (err, result) => {
-          if (err) {
-              console.log('Error occurred: ' + err.message, 'create()');
-              reject(err);
-          } else {
-              resolve({"result": item, statusCode: 200 });
-          }
-        })
-      }
+      } 
     })
   })
 }
@@ -451,7 +507,11 @@ function joinEventOrRequest(params, headers){
               if(document.id == "events" && document.volunteerPresent == document.volunteerRequired){
                 return resolve({"error": "No more volunteers required", statusCode: 400 });
               }
+              if(user.activeRequestCount >= 5){
+                return resolve({"error": "You can not have more than 5 active requests/events. Complete one of the request to join more", statusCode: 400 });
+              }
               let volunteerList = document.volunteers
+              let oldVolunteerList = volunteerList
               for(i = 0; i < volunteerList.length ; i++){
                 if(volunteerList[i]._id == user._id){
                   return resolve({"error": "Volunteer already present", statusCode: 400 });
@@ -493,7 +553,22 @@ function joinEventOrRequest(params, headers){
                     console.log('Error occurred: ' + err.message, 'create()');
                     reject(err);
                 } else {
-                  return resolve({"result": item, statusCode: 200 });
+                  updateRequestCount(user, user.activeRequestCount+1, user.totalRequestCount+1).then(data => {
+                    if(data.statusCode == 200){
+                      return resolve({"result": item, statusCode: 200 });
+                    }else{
+                      //Reverting event update since user update failed
+                      item["volunteers"] = oldVolunteerList
+                      db.insert(item, (err, result) => {
+                        if (err) {
+                            console.log('Error occurred: ' + err.message, 'create()');
+                            reject(err);
+                        } else {
+                           return resolve({"error": "Server is busy. Try Again later", statusCode: 401 });
+                        }
+                      })
+                    }
+                  })
                 }
               })
             }
@@ -585,6 +660,36 @@ function findVolunteerForRequest(city){
   });
 }
 
+function updateRequestCount(user, activeRequestCount, totalRequestCount){
+  return new Promise((resolve, reject) => {
+    let item = {
+      _id: user._id,
+      _rev: user._rev, // Specifiying the _rev turns this into an update
+      id: user.id,
+      token: user.token,
+      name: user.name,
+      email: user.email,
+      address: user.address,
+      userType: user.userType,
+      causeType: user.causeType,
+      contact: user.contact,
+      pan: user.pan,
+      password: user.password,
+      activeRequestCount: activeRequestCount,
+      totalRequestCount: totalRequestCount,
+      whenCreated: user.whenCreated,
+      whenUpdated: Date.now()     
+    }
+    db.insert(item, (err, result) => {
+      if (err) {
+          resolve({statusCode: 400});
+      } else {
+        resolve({statusCode: 200});
+      }
+    });
+  })
+}
+
 module.exports = {
   deleteById: deleteById,
   createEvent: createEvent,
@@ -599,5 +704,6 @@ module.exports = {
   joinEventOrRequest: joinEventOrRequest,
   getMyRequests: getMyRequests,
   getMyEvents: getMyEvents,
-  findVolunteerForRequest: findVolunteerForRequest
+  findVolunteerForRequest: findVolunteerForRequest,
+  updateRequestCount: updateRequestCount
 };
