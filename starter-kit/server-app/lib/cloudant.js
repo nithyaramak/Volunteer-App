@@ -280,7 +280,7 @@ function updateEvent(params, headers, body) {
                   if (body.volunteerRequired) {item["volunteerRequired"] = body.volunteerRequired} else {item["volunteerRequired"] = document.volunteerRequired};
                   if (body.funds) {item["funds"] = body.funds} else {item["funds"] = document.funds};
                   let address = {}
-                  if (body.city) {address["city"] = body.city} else {address["city"] = document.address.city};
+                  if (body.city) {address["city"] = body.city.toLowerCase()} else {address["city"] = document.address.city.toLowerCase()};
                   if (body.state) {address["state"] = body.state} else {address["state"] = document.address.state};
                   if (body.country) {address["country"] = body.country} else {address["country"] = document.address.country};
                   item["address"] = address
@@ -567,7 +567,7 @@ function findVolunteerForRequest(city){
       "$lt": 6
     },
     "address": {
-      "city": city
+      "city": city.toLowerCase()
     }
   };
   return new Promise((resolve, reject) => {
