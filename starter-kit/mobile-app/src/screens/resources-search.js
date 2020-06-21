@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
     paddingTop: 5,
     width: 70,
     height: 30,
-    borderRadius: 4
+    borderRadius: 4,
   },
   buttonUpdate: {
     backgroundColor: '#ff8c00',
@@ -174,7 +174,7 @@ const SearchResources = function({navigation, userID}) {
         funds: item.funds,
         causeType: item.causeType,
       };
-       navigation.navigate('Event Registration', {payload, searchItem});
+      navigation.navigate('Event Registration', {payload, searchItem});
     },
     closeEvent = item => {
       const requestType = item.id === 'events' ? 'event' : 'request',
@@ -220,12 +220,29 @@ const SearchResources = function({navigation, userID}) {
         )
       );
     },
+    getFilterOptions = () => {
+      const options = [
+        {label: 'Active', value: 'active'},
+        {label: 'All', value: 'all'},
+      ];
+      if (userID) {
+        const label = query.type === 'events' ? 'My Events' : 'My Requests';
+        options.push({label, value: 'self'});
+      }
+      return options;
+    },
     searchItem = () => {
       const payload = {
         ...query,
       };
+      let url = `api/${payload.type}`;
+      if (payload.filter === 'self') {
+        url = `api/${
+          payload.type === 'events' ? 'event/list' : 'request/list'
+        }`;
+      }
 
-      search(payload)
+      search(payload, url)
         .then(results => {
           setInfo(`${results.result.length} result(s)`);
           setItems(results.result);
@@ -262,10 +279,7 @@ const SearchResources = function({navigation, userID}) {
           style={{inputIOS: styles.selector}}
           value={query.filter}
           onValueChange={t => setQuery({...query, filter: t})}
-          items={[
-            {label: 'Active', value: 'active'},
-            {label: 'All', value: 'all'},
-          ]}
+          items={getFilterOptions()}
         />
 
         <TouchableOpacity onPress={searchItem}>
@@ -326,10 +340,14 @@ const SearchResources = function({navigation, userID}) {
                   Cause/Need : {item.causeType}
                 </Text>
                 <Text style={styles.searchResultText}>
-                  Active : {item.isActive ? "Yes" : "No"}
+                  Active : {item.isActive ? 'Yes' : 'No'}
                 </Text>
                 <Text style={styles.searchResultText}>
-                  Volunteer Contact : {item.volunteers && item.volunteers.length && item.volunteers[0].contact || "N/A"}
+                  Volunteer Contact :{' '}
+                  {(item.volunteers &&
+                    item.volunteers.length &&
+                    item.volunteers[0].contact) ||
+                    'N/A'}
                 </Text>
               </Card>
             );

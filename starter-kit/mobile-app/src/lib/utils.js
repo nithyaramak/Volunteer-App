@@ -18,24 +18,27 @@ export const getToken = () => {
   return AsyncStorage.getItem('user').then(value => JSON.parse(value));
 };
 
-export const search = payload => {
-  return fetch(`${serverUrl}/api/${payload.type}`, {
-    method: 'GET',
-    mode: 'no-cors',
-    cache: 'no-cache',
-    params: {isActive: payload.filter === 'active'},
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
-  }).then(response => {
-    if (!response.ok) {
-      throw new Error(
-        response.statusText || response.message || response.status,
-      );
-    } else {
-      return response.json();
-    }
+export const search = (payload, url) => {
+  return getToken().then(value => {
+    return fetch(`${serverUrl}/${url}`, {
+      method: 'GET',
+      mode: 'no-cors',
+      cache: 'no-cache',
+      params: {isActive: payload.filter === 'active'},
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        token: value && value.token,
+      },
+    }).then(response => {
+      if (!response.ok) {
+        throw new Error(
+          response.statusText || response.message || response.status,
+        );
+      } else {
+        return response.json();
+      }
+    });
   });
 };
 
