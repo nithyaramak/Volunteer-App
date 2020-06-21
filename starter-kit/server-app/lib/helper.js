@@ -99,7 +99,7 @@ function constructUserObject(id, params){
     name: params.name,
     email: params.email,
     address: {
-      city: params.city,
+      city: params.city.toLowerCase(),
       state: params.state,
       country: params.country,
       pincode: params.pincode
