@@ -15,16 +15,15 @@ export const userID = () => {
 };
 
 export const getToken = () => {
-  const value =  AsyncStorage.getItem('user').then((value)=> JSON.parse(value))
-  return value;
+  return AsyncStorage.getItem('user').then(value => JSON.parse(value));
 };
 
-export const search = (payload) => {
-
+export const search = payload => {
   return fetch(`${serverUrl}/api/${payload.type}`, {
     method: 'GET',
     mode: 'no-cors',
     cache: 'no-cache',
+    params: {isActive : payload.filter === "active"},
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
@@ -41,23 +40,26 @@ export const search = (payload) => {
 };
 
 export const apiCall = (item, url) => {
-  return fetch(`${serverUrl}/${url}`, {
-    method: 'POST',
-    mode: 'no-cors',
-    cache: 'no-cache',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
-    body: JSON.stringify(item),
-  }).then(response => {
-    if (!response.ok) {
-      throw new Error(
-        response.statusText || response.message || response.status,
-      );
-    } else {
-      return response.json();
-    }
+  return getToken().then(value => {
+    return fetch(`${serverUrl}/${url}`, {
+      method: 'POST',
+      mode: 'no-cors',
+      cache: 'no-cache',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        token: value && value.token,
+      },
+      body: JSON.stringify(item),
+    }).then(response => {
+      if (!response.ok) {
+        throw new Error(
+          response.statusText || response.message || response.status,
+        );
+      } else {
+        return response.json();
+      }
+    });
   });
 };
 
@@ -126,33 +128,14 @@ export const message = payload => {
   });
 };
 
-export const logout = (userId) => {
+export const logout = userId => {
   return fetch(`${serverUrl}/logout/${userId}`, {
     method: 'DELETE',
     mode: 'no-cors',
     cache: 'no-cache',
     headers: {
-      'Content-Type': 'application/json'
-    }
-  }).then((response) => {
-    if (!response.ok) {
-      if (response.status === 404) {
-        throw new Error('Item not found');
-      } else {
-        throw new Error('Please try again. If the problem persists contact an administrator.');
-      }
-    }
-  });
-};
-
-export const patchCall = (item, url) => {
-  return fetch(`${serverUrl}/${url}`, {
-    method: 'PATCH',
-    mode: 'no-cors',
-    cache: 'no-cache',
-    headers: {
       'Content-Type': 'application/json',
-    }
+    },
   }).then(response => {
     if (!response.ok) {
       if (response.status === 404) {
@@ -163,5 +146,29 @@ export const patchCall = (item, url) => {
         );
       }
     }
+  });
+};
+
+export const patchCall = (item, url) => {
+  return getToken().then(value => {
+    return fetch(`${serverUrl}/${url}`, {
+      method: 'PATCH',
+      mode: 'no-cors',
+      cache: 'no-cache',
+      headers: {
+        'Content-Type': 'application/json',
+        token: value && value.token,
+      },
+    }).then(response => {
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error('Item not found');
+        } else {
+          throw new Error(
+            'Please try again. If the problem persists contact an administrator.',
+          );
+        }
+      }
+    });
   });
 };

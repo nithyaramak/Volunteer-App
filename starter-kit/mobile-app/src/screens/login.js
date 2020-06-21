@@ -54,7 +54,6 @@ const Login = ({navigation, setUser}) => {
     setItem({...clearItem});
   }, []);
 
-console.log(navigation, setUser,"setUser");
   const sendItem = async () => {
     const payload = {
       ...item,
@@ -65,13 +64,13 @@ console.log(navigation, setUser,"setUser");
         Alert.alert('Success', 'Login Successful.', [{text: 'OK'}]);
         setItem({...clearItem});
         setUser(payload.name)
-        AsyncStorage.setItem('user', JSON.stringify(res.result)).then(()=> navigation.navigate('Home'));
+        AsyncStorage.setItem('user', JSON.stringify(res.result)).then(()=>  navigation.navigate('Home'));
       })
       .catch(err => {
         console.log(err,"err----");
         Alert.alert(
           'ERROR',
-          'Please try again. If the problem persists contact an administrator.',
+          'Incorrect Username or Password, Please try again. ',
           [{text: 'OK'}],
         );
       });
