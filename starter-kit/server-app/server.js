@@ -177,6 +177,7 @@ app.get('/api/requests', (req, res) => {
 });
 
 //create event
+let eventCauseTypes = ["Food/Water", "Medicine", "Shelter", "Educational Help", "Daily Essentials"]
 app.post('/api/event', (req, res) => {
   if (!req.body.description) {
     return res.status(422).json({ errors: "Description of event must be provided"});
@@ -186,6 +187,12 @@ app.post('/api/event', (req, res) => {
   }
   if (!req.body.contact) {
     return res.status(422).json({ errors: "A method of conact must be provided"});
+  }
+  if (!req.body.causeType) {
+    return res.status(422).json({ errors: "Cause/Needs must be provided"});
+  }
+  if (!eventCauseTypes.includes(req.body.causeType)) {
+    return res.status(422).json({ errors: "Cause/Needs must be one of " + eventCauseTypes.toString()});
   }
 
   cloudant
@@ -256,6 +263,9 @@ app.post('/signup', (req, res) => {
   }
   if (!req.body.contact) {
     return res.status(422).json({ errors: "A method of contact must be provided"});
+  }
+  if (!req.body.password) {
+    return res.status(422).json({ errors: "Password of user must be provided"});
   }
 
   cloudant
