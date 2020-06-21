@@ -313,7 +313,7 @@ app.post('/login', (req, res) => {
 //close request after completion
 app.patch('/api/request/close/:id', (req, res) => {
   cloudant
-    .closeEventOrRequest(req.params)
+    .closeEventOrRequest(req.params, req.headers)
     .then(data => {
       // when request is closed update volunteers active request count if volunteer is found
       if (data.statusCode != 200) {
@@ -329,7 +329,7 @@ app.patch('/api/request/close/:id', (req, res) => {
 //close event after completion
 app.patch('/api/event/close/:id', (req, res) => {
   cloudant
-    .closeEventOrRequest(req.params)
+    .closeEventOrRequest(req.params, req.headers)
     .then(data => {
       // when event is closed update volunteers active request count if volunteer is found
       if (data.statusCode != 200) {
