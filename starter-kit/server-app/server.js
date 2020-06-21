@@ -7,6 +7,7 @@ const assistant = require('./lib/assistant.js');
 const port = process.env.PORT || 3000
 
 const cloudant = require('./lib/cloudant.js');
+const helper = require('./lib/helper.js');
 
 const app = express();
 app.use(bodyParser.json());
@@ -266,6 +267,9 @@ app.post('/signup', (req, res) => {
   }
   if (!req.body.password) {
     return res.status(422).json({ errors: "Password of user must be provided"});
+  }
+  if (!helper.validateEmail(req.body.email)) {
+    return res.status(422).json({ errors: "Incorrect email id, please correct."});
   }
 
   cloudant

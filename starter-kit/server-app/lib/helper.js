@@ -118,10 +118,16 @@ function constructUserObject(id, params){
   return item;
 }
 
+function validateEmail(email) {
+  const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return re.test(String(email).toLowerCase());
+}
+
 module.exports = {
   constructResourceObject: constructResourceObject,
   constructEventObject: constructEventObject,
   constructUserObject: constructUserObject,
   randomToken: randomToken,
-  constructRequestObject: constructRequestObject
+  constructRequestObject: constructRequestObject,
+  validateEmail: validateEmail
 };
