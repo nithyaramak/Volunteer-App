@@ -97,6 +97,7 @@ const styles = StyleSheet.create({
     width: 70,
     height: 30,
     borderRadius: 4,
+    marginLeft: 250,
   },
   buttonUpdate: {
     backgroundColor: '#ff8c00',
@@ -133,6 +134,12 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     alignItems: 'flex-end',
     flexDirection: 'row',
+  },
+  memberText: {
+    fontFamily: 'IBMPlexSans-Bold',
+    padding: 5,
+    color: 'gray',
+    marginLeft: 250
   },
 });
 const titleize = str => {
@@ -174,7 +181,8 @@ const SearchResources = function({navigation, userID}) {
         funds: item.funds,
         causeType: item.causeType,
       };
-      navigation.navigate('Event Registration', {payload, searchItem});
+
+      navigation.jumpTo('Event Registration', {payload, searchItem});
     },
     closeEvent = item => {
       const requestType = item.id === 'events' ? 'event' : 'request',
@@ -290,7 +298,6 @@ const SearchResources = function({navigation, userID}) {
         <Text style={styles.searchResultText}>{info}</Text>
         <View style={styles.container}>
           {items.map((item, index) => {
-            console.log(item, 'checkkkk');
             return (
               <Card key={index} style={{padding: 10, margin: 10}}>
                 {item.isActive && userID && (
@@ -301,7 +308,7 @@ const SearchResources = function({navigation, userID}) {
                           <Text style={styles.buttonJoin}>Join</Text>
                         </TouchableOpacity>
                       ) : memberAlready(item) ? (
-                        <Text style={styles.searchResultText}>Member</Text>
+                        <Text style={styles.memberText}>Member</Text>
                       ) : null
                     ) : null}
                     {item.id === 'events' && getUpdateButton(item)}
