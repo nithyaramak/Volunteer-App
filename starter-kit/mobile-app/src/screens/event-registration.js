@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import {ScrollView} from 'react-native-gesture-handler';
 import PickerSelect from 'react-native-picker-select';
-
+import { YellowBox } from 'react-native';
 import {apiCall, update} from '../lib/utils';
 
 const styles = StyleSheet.create({
@@ -89,7 +89,7 @@ const EventRegistration = function({route, navigation}) {
     city: '',
     state: '',
     country: '',
-    volunteerRequired: 1,
+    volunteerRequired: '1',
     funds: '',
     causeType: 'Food/Water',
   };
@@ -117,6 +117,9 @@ const EventRegistration = function({route, navigation}) {
     return true;
   };
   React.useEffect(() => {
+    YellowBox.ignoreWarnings([
+      'Non-serializable values were found in the navigation state',
+    ]);
     if (route.params && route.params.payload) {
       setItem(route.params.payload);
     }
@@ -239,7 +242,6 @@ const EventRegistration = function({route, navigation}) {
         returnKeyType="send"
         enablesReturnKeyAutomatically={true}
         placeholder="Number of Volunteers"
-        keyboardType="numeric"
         blurOnSubmit={false}
       />
       <Text style={styles.label}>Estimated Funds</Text>

@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
   }
 });
 
-const Login = ({navigation, setUser}) => {
+const Login = ({navigation, setUser, setUserID}) => {
   const clearItem = {
     contact: '',
     password: ''
@@ -63,7 +63,8 @@ const Login = ({navigation, setUser}) => {
       .then((res) => {
         Alert.alert('Success', 'Login Successful.', [{text: 'OK'}]);
         setItem({...clearItem});
-        setUser(payload.name)
+        setUser(res.result.name);
+        setUserID(res.result._id);
         AsyncStorage.setItem('user', JSON.stringify(res.result)).then(()=>  navigation.navigate('Home'));
       })
       .catch(err => {

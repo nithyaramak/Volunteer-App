@@ -12,6 +12,7 @@ import PickerSelect from 'react-native-picker-select';
 import {ScrollView} from 'react-native-gesture-handler';
 import {search, patchCall} from '../lib/utils';
 import {Card} from 'react-native-shadow-cards';
+import VolunteerModal from './volunteer-modal';
 
 const styles = StyleSheet.create({
   outerView: {
@@ -138,8 +139,14 @@ const styles = StyleSheet.create({
   memberText: {
     fontFamily: 'IBMPlexSans-Bold',
     padding: 5,
-    color: 'gray',
-    marginLeft: 250
+    fontSize: 16,
+    color: 'green',
+  },
+  volunteersList: {
+    fontFamily: 'IBMPlexSans-Bold',
+    padding: 5,
+    color: '#ff8c00',
+    textDecorationLine: 'underline',
   },
 });
 const titleize = str => {
@@ -152,9 +159,11 @@ const titleize = str => {
 };
 
 const SearchResources = function({navigation, userID}) {
-  const [query, setQuery] = React.useState({type: 'events', filter: 'active'});
-  const [items, setItems] = React.useState([]);
-  const [info, setInfo] = React.useState(''),
+  const [query, setQuery] = React.useState({type: 'events', filter: 'active'}),
+    [items, setItems] = React.useState([]),
+    [modalVisible, setModalVisible] = React.useState(false),
+    [volunteersList, setVolunteers] = React.useState([]),
+    [info, setInfo] = React.useState(''),
     joinEvent = item => {
       const requestType = item.id === 'events' ? 'event' : 'request',
         url = `api/${requestType}/join/${item._id}`;
@@ -182,7 +191,7 @@ const SearchResources = function({navigation, userID}) {
         causeType: item.causeType,
       };
 
-      navigation.jumpTo('Event Registration', {payload, searchItem});
+      navigation.navigate('Event Registration', {payload, searchItem});
     },
     closeEvent = item => {
       const requestType = item.id === 'events' ? 'event' : 'request',
@@ -268,6 +277,19 @@ const SearchResources = function({navigation, userID}) {
     item.id === 'events'
       ? getVacancy(item) && item.createdBy && item.createdBy._id !== userID
       : true;
+  const getVolunteersList = item => {
+    let volunteers = [];
+    if (item.volunteers && item.volunteers.length) {
+      volunteers = item.volunteers.map(volunteer => {
+        return {
+          name: volunteer.name,
+          contact: volunteer.contact,
+        };
+      });
+    }
+    setVolunteers(volunteers);
+    setModalVisible(true);
+  };
 
   return (
     <View style={styles.outerView}>
@@ -295,12 +317,17 @@ const SearchResources = function({navigation, userID}) {
         </TouchableOpacity>
       </View>
       <ScrollView style={styles.outerView}>
+        <VolunteerModal
+          modalVisible={modalVisible}
+          setModalVisible={setModalVisible}
+          volunteersList={volunteersList}
+        />
         <Text style={styles.searchResultText}>{info}</Text>
         <View style={styles.container}>
           {items.map((item, index) => {
             return (
               <Card key={index} style={{padding: 10, margin: 10}}>
-                {item.isActive && userID && (
+                {item.isActive && userID ? (
                   <View style={styles.joinView}>
                     {queryTypeCheck(item) ? (
                       !existingVolunteer(item) ? (
@@ -318,7 +345,7 @@ const SearchResources = function({navigation, userID}) {
                       </TouchableOpacity>
                     )}
                   </View>
-                )}
+                ) : null}
                 <Text style={styles.searchResultText}>
                   {`${item.id === 'events' ? 'Event Name' : 'Name'}`} :
                   {item.name}
@@ -349,13 +376,11 @@ const SearchResources = function({navigation, userID}) {
                 <Text style={styles.searchResultText}>
                   Active : {item.isActive ? 'Yes' : 'No'}
                 </Text>
-                <Text style={styles.searchResultText}>
-                  Volunteer Contact :{' '}
-                  {(item.volunteers &&
-                    item.volunteers.length &&
-                    item.volunteers[0].contact) ||
-                    'N/A'}
-                </Text>
+                <TouchableOpacity onPress={() => getVolunteersList(item)}>
+                  <Text style={styles.volunteersList}>
+                    Click here to view Volunteer Contact
+                  </Text>
+                </TouchableOpacity>
               </Card>
             );
           })}
