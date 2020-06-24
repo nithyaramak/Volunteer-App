@@ -24,7 +24,7 @@ What is needed is a solution that empowers communities to easily connect and pro
 ### How can technology help?
 
 Mobile, web, and cloud services enable rapid deployment of applications that can empower cooperation in the community. [Watson Assistant](https://www.ibm.com/cloud/watson-assistant/) is a service on [IBM Cloud](https://cloud.ibm.com) that allows you to build, train, and deploy conversational interactions into any application, device, or channel.
-![technology-help-diagram](/images/architecture-diagram.png)
+![technology-help-diagram](/images/technology-help-diagram.png)
 
 ## The idea
 
