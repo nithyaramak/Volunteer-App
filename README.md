@@ -177,6 +177,8 @@ To run the mobile application (using the Xcode iOS Simulator or Android Studio E
 With the application running in the simulator/emulator, you should be able to navigate through the various screens:
 
 ![Intro Screen](/images/home.png)
+![Intro Screen](/images/home-800.png)
+![Intro Screen](/images/home-640.png)
 ![Request Registration Screen](/images/register-request.png)
 ![User registration Screen](/images/user-registration.png)
 ![Event Join Screen](/images/event-join.png)
