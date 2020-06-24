@@ -176,12 +176,12 @@ To run the mobile application (using the Xcode iOS Simulator or Android Studio E
 
 With the application running in the simulator/emulator, you should be able to navigate through the various screens:
 
-![Intro Screen](/images/0-screen-home.png)
-![Donate Screen](/images/1-screen-donate.png)
-![Search Screen](/images/2-screen-search.png)
-![Chat Screen](/images/5-screen-chat.png)
-![Map1 Screen](/images/3-screen-map.png)
-![Map2 Screen](/images/4-screen-map.png)
+![Intro Screen](/images/home.png)
+![Request Registration Screen](/images/register-request.png)
+![User registration Screen](/images/user-registration.png)
+![Event Join Screen](/images/event-join.png)
+![Event Registration Screen](/images/event-registration.png)
+![Event Search Screen](/images/event-search.png)
 
 ## Resources
 
