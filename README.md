@@ -1,18 +1,4 @@
-# Community collaboration in the context of COVID-19
-
-This solution starter was created by technologists from IBM.
-
-## Authors
-
-- Henry Nash
-- Va Barbosa
-- Javier Torres
-- Omer Arad
-- JJ Asghar
-- Jody Burks
-- Robert Loredo
-- Debbie Kestin Schildkraut
-- Bruce Weed
+# Guardian Angels
 
 ## Contents
 
@@ -30,30 +16,30 @@ This solution starter was created by technologists from IBM.
 
 ### What's the problem?
 
-There is a growing interest in enabling communities to cooperate among themselves to solve these problems, whether it be to advertise where supplies are held, offer assistance for collections, or other local services like volunteer deliveries.
-
-In times of crisis, such as the 2020 SARS-COV-2 (COVID-19 or "Novel Coronavirus") crisis, while federal and local governments may be rolling out broad programs, cooperation at the local level is usually the most effective way of getting help to where it is most needed as quickly as possible. Traditional social media is one way of communicating within a community, but this is (by its very design) not locally focused, and often not sufficiently structured to enable rapid discovery of help needed.
-
-In the COVID-19 crisis, we have already seen shortages of local food, medical equipment, and other supplies. In addition, the recommended (or required) self-isolation and social distancing measures can compound the problem by preventing people from easily getting to locations with the best stocks of supplies.
+In our country, there are lot of people who are in need of help such as money, food & shelter etc. During crisis situations(pandemics/flood), many people are unaware about the government schemes available and lot of people lose their lives due to scarcity of basic needs.
+Many people across the geography want to volunteer to various such causes but they do not have a foolproof forum to display their willingness and reach out to such people due to lack of transparency
 
 What is needed is a solution that empowers communities to easily connect and provide this information to each other.
 
 ### How can technology help?
 
 Mobile, web, and cloud services enable rapid deployment of applications that can empower cooperation in the community. [Watson Assistant](https://www.ibm.com/cloud/watson-assistant/) is a service on [IBM Cloud](https://cloud.ibm.com) that allows you to build, train, and deploy conversational interactions into any application, device, or channel.
-
-Creating a chatbot using Watson Assistant can help you address the issues that your users may face while trying to gather the necessary information. Embedding location/routing services (like [HERE](https://developer.here.com/products/routing)) can enhance such applications, giving optimum guidance so that they are outside of their isolation location for the minimum amount of time.
+![technology-help-diagram](/images/architecture-diagram.png)
 
 ## The idea
 
 The goal is to provide a mobile application, along with server-side components, that serves as the basis for developers to build out a community cooperation application that addresses local needs for food, equipment, and resources.
-It would allow both "Suppliers" (such as a store or a community member who has produce they can sell or distribute) to make people aware of what the have; and consumers ("Recipients") to locate where these supplies are, and, if necessary, guide them to the appropriate locations to pick them up.
+A platform for connecting volunteers with people to understand and help with their basic needs.
+- For all volunteering opportunities (remote, physical, verified charities)
+- Focusing on creating a forum for awareness & avail help
+- With a level of moderator-work to monitor fake or shady stuff
 
 ## How it works
 
-A Supplier (who may be a regular resident, a small business, a voluntary organization, etc.) that has food, supplies, resources, or other essentials they can provide opens the mobile application and fills out a brief form that indicates what they have. This information is then stored in a database in the IBM Cloud.
+After installing this app, you can sign up as volunteer to start contributing to the society and nature. Create your profile by filling all necessary information. And then sign in using your credentials. Once you sign in you have options to create an event or join existing event. Fill all the necessary details of event and all event can set maximum count of volunteers required. Once event is created any volunteer can join that event. Once you join the event you are ready to serve the community.
 
-A Recipient, who is in need of food, supplies, resources, or other essentials, opens the mobile application and can use the chat interface to locate supplies near them. For instance, they might type "Where can I find bread?" or "Can someone collect my shopping for me?" The mobile application then accesses the database (after first understanding the question via Watson Assistant) and then displays a map showing locally where they can find what they are looking for.
+This app can also be used by beneficiary i.e. one who needs help. He/she can raise a request and fill all the details. Once the request is submitted a volunteer is assigned to request based on location and needs of beneficiary. If volunteer is not available at that instant of time then we put this request in queue or if any volunteer is available they can pick the request. Beneficiary can search his request anytime and contact the assigned volunteer.
+In this way we are trying to build a channel of help and hope.
 
 ## Diagrams
 
@@ -65,14 +51,6 @@ This solution starter idea combines a chat interface (Watson Assistant), data st
 1. The Recipient can ask questions to Watson Assistant and get answers on food/service availability questions.
 1. The Supplier can post the availability of stock or services they can provide, as well as locate the items they need.
 1. The Recipient can obtain geolocation data to plot routes to collect (or drop off) supplies using HERE Location Services.
-
-## Documents
-
-Trusted sources for COVID-19 Information:
-- [CDC COVID-19 FAQ](https://www.cdc.gov/coronavirus/2019-ncov/faq.html)
-- [WHO COVID-19 page](https://www.who.int/health-topics/coronavirus)
-- [Johns Hopkins University Coronavirus (includes tracking map)](https://coronavirus.jhu.edu)
-- [National Foundation for Infectious Diseases](https://www.nfid.org/infectious-diseases/frequently-asked-questions-about-novel-coronavirus-2019-ncov/)
 
 ## Technology
 
@@ -95,13 +73,6 @@ Trusted sources for COVID-19 Information:
 - [Chat Bot Slack Integration](https://developer.ibm.com/technologies/artificial-intelligence/videos/integrating-watson-assistant-with-slack-using-built-in-integrations/#)
 - [Chat Bot Slack deployment](https://cloud.ibm.com/docs/assistant?topic=assistant-deploy-slack)
 - [Node-RED Slack integration](https://www.ibm.com/cloud/blog/create-a-chatbot-on-ibm-cloud-and-integrate-with-slack-part-1)
-
-### HERE Technologies
-
-- [HERE.com API Key](https://developer.here.com/ref/IBM_starterkit_Covid?create=Freemium-Basic)
-- [HERE Maps](https://developer.here.com/products/maps)
-- [HERE Routing](https://developer.here.com/products/routing)
-- [Integrate interactive maps and location features into your application](https://developer.here.com/documentation/)
 
 ## Getting started
 
@@ -217,7 +188,6 @@ With the application running in the simulator/emulator, you should be able to na
 - [IBM Cloud](https://www.ibm.com/cloud)
 - [Watson Assistant](https://cloud.ibm.com/docs/assistant?topic=assistant-getting-started)
 - [IBM Cloudant](https://cloud.ibm.com/docs/Cloudant?topic=cloudant-overview)
-- [HERE Location Services](https://developer.here.com/documentation)
 - [Node.js](https://nodejs.org)
 - [React Native](https://reactnative.dev/)
 - [IBM Blockchain for Developers](https://developer.ibm.com/technologies/blockchain/)
