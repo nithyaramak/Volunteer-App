@@ -45,12 +45,10 @@ In this way we are trying to build a channel of help and hope.
 
 ![Cooperation architecture diagram](/images/architecture-diagram.png)
 
-This solution starter idea combines a chat interface (Watson Assistant), data storage to hold the status of supplies available, and location services with real-time information to get users the information they need.
+This solution starter idea combines a chat interface (Watson Assistant), data storage to hold the details of volunteers and status of event.
 
 1. The Recipient launches the mobile app and can access information across multiple services.
-1. The Recipient can ask questions to Watson Assistant and get answers on food/service availability questions.
-1. The Supplier can post the availability of stock or services they can provide, as well as locate the items they need.
-1. The Recipient can obtain geolocation data to plot routes to collect (or drop off) supplies using HERE Location Services.
+2. The Recipient can ask questions to Watson Assistant and get answers on services available and volunteer list in a category.
 
 ## Technology
 
